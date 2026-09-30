@@ -1,0 +1,521 @@
+<title>LDO LDR Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Confluence-style single column, blue section banners, tables first, script and references at the end */
+:root{
+  --bg:#ffffff; --fg:#172b4d; --muted:#5e6c84; --line:#dfe1e6; --panel:#f4f5f7;
+  --banner:#0052cc; --banner-fg:#ffffff; --link:#0052cc; --code-bg:#f4f5f7;
+  --t1:#de350b; --t2:#ff8b00; --t3:#0065ff; --t4:#6554c0;
+  --ok:#006644; --ok-bg:#e3fcef; --bad:#bf2600; --bad-bg:#ffebe6; --warn:#974f0c; --warn-bg:#fffae6;
+  --bar:#4c9aff; --spec:#de350b;
+  --c1:#0065ff; --c2:#00875a; --c3:#6554c0; --c4:#ff8b00; --c5:#6b778c;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1d2125; --fg:#dee4ea; --muted:#9fadbc; --line:#38414a; --panel:#22272b;
+  --banner:#0c66e4; --banner-fg:#ffffff; --link:#85b8ff; --code-bg:#161a1d;
+  --t1:#ff8f73; --t2:#ffc400; --t3:#579dff; --t4:#9f8fef;
+  --ok:#7ee2b8; --ok-bg:#1c3329; --bad:#fd9891; --bad-bg:#42221f; --warn:#f5cd47; --warn-bg:#3d3319;
+  --bar:#579dff; --spec:#f87168;
+  --c1:#579dff; --c2:#4bce97; --c3:#9f8fef; --c4:#fea362; --c5:#9fadbc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1d2125; --fg:#dee4ea; --muted:#9fadbc; --line:#38414a; --panel:#22272b;
+  --banner:#0c66e4; --banner-fg:#ffffff; --link:#85b8ff; --code-bg:#161a1d;
+  --t1:#ff8f73; --t2:#ffc400; --t3:#579dff; --t4:#9f8fef;
+  --ok:#7ee2b8; --ok-bg:#1c3329; --bad:#fd9891; --bad-bg:#42221f; --warn:#f5cd47; --warn-bg:#3d3319;
+  --bar:#579dff; --spec:#f87168;
+  --c1:#579dff; --c2:#4bce97; --c3:#9f8fef; --c4:#fea362; --c5:#9fadbc; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--sans);margin:0}
+.wrap{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:24px 48px}
+a{color:var(--link)}
+h1{font-size:28px;font-weight:600;margin:0 0 4px;text-wrap:balance}
+.meta{color:var(--muted);font-size:13px;margin-bottom:20px}
+.banner{background:var(--banner);color:var(--banner-fg);padding:10px 16px;border-radius:3px;font-size:18px;font-weight:600;margin:36px 0 14px;scroll-margin-top:12px}
+h3{font-size:16px;font-weight:600;margin:22px 0 8px}
+p{margin:0 0 12px;max-width:72ch}
+.toc{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px 18px}
+.toc b{display:block;margin-bottom:6px}
+.toc ol{margin:0;padding-left:20px}.toc ul{margin:2px 0;padding-left:18px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:3px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{background:var(--panel);text-align:left;font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.n{white-space:nowrap}
+.rank{font-weight:600;color:var(--muted)}
+.chip{display:inline-block;padding:1px 8px;border-radius:3px;font-size:12px;font-weight:600;white-space:nowrap}
+.k1{color:var(--t1);border:1px solid var(--t1)}.k2{color:var(--t2);border:1px solid var(--t2)}.k3{color:var(--t3);border:1px solid var(--t3)}.k4{color:var(--t4);border:1px solid var(--t4)}
+.pass{background:var(--ok-bg);color:var(--ok)}.fail{background:var(--bad-bg);color:var(--bad)}.warn{background:var(--warn-bg);color:var(--warn)}
+.barc{display:flex;align-items:center;gap:8px;min-width:150px}
+.bar{height:10px;background:var(--bar);border-radius:2px}
+.hot{color:var(--bad);font-weight:600}.mid{color:var(--warn);font-weight:600}.cool{color:var(--ok);font-weight:600}
+code{font-family:var(--mono);font-size:12.5px;background:var(--code-bg);padding:1px 4px;border-radius:3px}
+.pie{display:flex;flex-wrap:wrap;align-items:center;gap:20px;margin:6px 0 14px}
+.donut{width:132px;height:132px;border-radius:50%;flex:none;display:grid;place-items:center}
+.donut span{width:76px;height:76px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:13px;color:var(--muted);text-align:center;line-height:1.2}
+.lg{display:grid;gap:4px;font-size:13.5px}
+.lg i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.fig{border:1px solid var(--line);border-radius:3px;padding:10px;overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:520px;height:auto}
+.cap{font-size:13px;color:var(--muted);margin:6px 0 0}
+.note{border-left:3px solid var(--banner);background:var(--panel);padding:10px 14px;margin:12px 0;font-size:14px;max-width:none}
+.codehd{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:3px 3px 0 0;padding:8px 12px;font-size:13px}
+.codehd b{font-family:var(--mono);font-weight:500}
+button{font:600 13px var(--sans);background:var(--banner);color:var(--banner-fg);border:0;border-radius:3px;padding:7px 14px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:0 0 3px 3px;padding:14px;overflow:auto;max-height:560px;font:12.5px/1.55 var(--mono)}
+.refs li{margin-bottom:6px}
+.refs small{color:var(--muted)}
+.steps{margin:0 0 12px;padding-left:20px}
+.toc ul.cols{columns:2 220px;column-gap:24px}
+.ck{border:1px solid var(--line);border-radius:3px;margin:22px 0;scroll-margin-top:12px}
+.ckh{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)}
+.ckh h3{margin:0;font-size:17px}
+.ckh .sm{color:var(--muted);font-size:13px}
+.ckb{padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.ckb>*{min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.grid2>div{min-width:0}
+.card{border:1px solid var(--line);border-radius:3px;padding:8px 10px}
+.card .cap{margin:0 0 4px;color:var(--fg);font-weight:500}
+.ckb svg{display:block;width:100%;height:auto;max-width:520px}
+.ckb .leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);margin-top:4px}
+.ckb .leg span{display:inline-flex;align-items:center;gap:4px}
+.ts{font-size:12px;fill:var(--muted);font-family:var(--sans)}
+.th{font-size:14px;font-weight:500;fill:var(--fg);font-family:var(--sans)}
+.ade{border:1px solid var(--line);border-radius:3px}
+.ade .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);font-size:13px;font-weight:600}
+.ade .ex{padding:8px 10px;font:12px/1.6 var(--mono);overflow-x:auto}
+.ade .ex b{color:var(--link);font-weight:500}
+.ade .su{padding:0 10px 8px;font-size:12.5px;color:var(--muted)}
+.ade button{padding:4px 10px;font-size:12px}
+#ck a{color:var(--link);text-decoration:none;font-weight:500}
+</style>
+
+<div class="wrap">
+<h1>LDO LDR Checklist</h1>
+<div class="meta">Low-level design review for an LDO, simulation side · Public Analog Domain &amp; Common Sense · 2026-09-30</div>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#scope">Scope and conventions</a>
+  <ul><li><a href="#given">Given specs vs design outcomes</a></li><li><a href="#nets">Net and variable names</a></li></ul></li>
+<li><a href="#checks">Review checklist, 15 checks</a>
+  <ul><li><a href="#tiers">Checks by tier</a></li><li><a href="#table">Full table</a></li></ul></li>
+<li><a href="#detail">Checks in detail, #1 to #15</a>
+  <ul class="cols"><li><a href="#c1">#1 Stability</a></li><li><a href="#c2">#2 Dropout</a></li><li><a href="#c3">#3 Current limit</a></li><li><a href="#c4">#4 Load transient</a></li><li><a href="#c5">#5 PSRR</a></li><li><a href="#c6">#6 Line transient</a></li><li><a href="#c7">#7 Startup</a></li><li><a href="#c8">#8 Accuracy and regulation</a></li><li><a href="#c9">#9 VREF trim</a></li><li><a href="#c10">#10 Offset Monte Carlo</a></li><li><a href="#c11">#11 Quiescent current</a></li><li><a href="#c12">#12 Reverse current</a></li><li><a href="#c13">#13 Thermal shutdown</a></li><li><a href="#c14">#14 Noise</a></li><li><a href="#c15">#15 EM / IR and aging</a></li></ul></li>
+<li><a href="#lr">Load regulation, worked example</a>
+  <ul><li><a href="#lrchart">VOUT vs ILOAD across PVT</a></li><li><a href="#lrtable">Worst-case summary</a></li><li><a href="#lrade">ADE XL outputs</a></li></ul></li>
+<li><a href="#script">SKILL script: add the load regulation test</a></li>
+<li><a href="#refs">Reference, public online data</a></li>
+</ol>
+</nav>
+
+<div class="banner" id="scope">1 · Scope and conventions</div>
+<h3 id="given">Given specs vs design outcomes</h3>
+<p>Two kinds of numbers get mixed up in LDO reviews. Givens come from the system and do not move with topology or silicon: supply range, load range, temperature range, lifetime, and the output capacitor with its ESR window. Design outcomes are what the review actually signs off: dropout, stability, transient, PSRR, accuracy, Iq and the rest. Every check below measures an outcome against a limit, swept across the givens.</p>
+<h3 id="nets">Net and variable names</h3>
+<div class="tw"><table>
+<thead><tr><th>Placeholder</th><th>Meaning</th><th>Used in expressions as</th></tr></thead>
+<tbody>
+<tr><td><code>$DUT</code></td><td>LDO instance name in the testbench</td><td><code>IS("/$DUT/$DUT_OUTPUT")</code> terminal currents</td></tr>
+<tr><td><code>$DUT_POWER</code></td><td>Input pin and net (VIN)</td><td><code>VS("/$DUT_POWER")</code></td></tr>
+<tr><td><code>$DUT_GND</code></td><td>Ground pin and net</td><td>Noise reference, IGND</td></tr>
+<tr><td><code>$DUT_OUTPUT</code></td><td>Output pin and net (VOUT)</td><td><code>VS</code>, <code>VT</code>, <code>VF</code>, <code>VN</code> of <code>"/$DUT_OUTPUT"</code></td></tr>
+<tr><td><code>VOUT_NOM</code>, <code>iload</code>, <code>vin</code></td><td>Design variables</td><td>Sweep variables and spec normalization</td></tr>
+</tbody></table></div>
+
+<div class="banner" id="checks">2 · Review checklist, 15 checks</div>
+<h3 id="tiers">Checks by tier</h3>
+<div class="pie">
+  <div class="donut" style="background:conic-gradient(var(--t1) 0 33.3%,var(--t2) 33.3% 60%,var(--t3) 60% 93.3%,var(--t4) 93.3% 100%)" role="img" aria-label="Tier split: 5 must-not-fail, 4 system, 5 accuracy, 1 reliability"><span>15<br>checks</span></div>
+  <div class="lg">
+    <div><i style="background:var(--t1)"></i>Tier 1, must not fail · 5 (33%)</div>
+    <div><i style="background:var(--t2)"></i>Tier 2, fails in the system · 4 (27%)</div>
+    <div><i style="background:var(--t3)"></i>Tier 3, accuracy and robustness · 5 (33%)</div>
+    <div><i style="background:var(--t4)"></i>Tier 4, reliability · 1 (7%)</div>
+  </div>
+</div>
+
+<h3 id="table">Full table</h3>
+<p>Sim runs is the rough count for one pass (PVT 5 × 3 × 3 = 45 where supply and temperature both matter). The bar is on a log scale so the Monte Carlo row does not flatten the rest. Click a check to jump to its detail.</p>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Check</th><th>Tier</th><th>Analysis</th><th>Example spec</th><th>Sim runs</th></tr></thead>
+<tbody id="ck"></tbody></table></div>
+
+
+<div class="banner" id="detail">3 · Checks in detail, #1 to #15</div>
+<p>Each check shows the testbench with the driven nets in orange and the measured nets in blue, the characterization charts with the red spec limit, a worst-case table across corners, and the ADE XL output expressions. Curves are illustrative models shaped like a 1.2 V, 300 mA LDO; replace them with your CSV data.</p>
+<div class="lg" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:8px">
+<div><i style="background:#D85A30"></i>Stimulus net</div><div><i style="background:#378ADD"></i>Measured net</div><div><i style="background:var(--spec)"></i>Spec limit</div><div><i style="background:#378ADD;opacity:.6"></i>μ ± 3σ (Monte Carlo)</div>
+</div>
+<div id="checksDetail"></div>
+
+<div class="banner" id="lr">4 · Load regulation, worked example</div>
+<p>DC sweep of the load current from 1 mA to 300 mA at VIN = 1.8 V, across five PVT corners. Two limits apply: the static slope (load regulation, mV/A) and the total VOUT error over the whole load range. The numbers below are illustrative, shaped like a real 1.2 V, 300 mA LDO, so the page is ready to take your CSV.</p>
+<h3 id="lrchart">VOUT vs ILOAD across PVT</h3>
+<div class="fig">
+<svg viewBox="0 0 600 330" role="img" aria-label="VOUT versus ILOAD for five corners with plus and minus 1.5 percent spec lines">
+<g font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="var(--muted)">
+<g stroke="var(--line)" stroke-width="1">
+<line x1="60" y1="46" x2="560" y2="46"/><line x1="60" y1="98" x2="560" y2="98"/><line x1="60" y1="150" x2="560" y2="150"/><line x1="60" y1="202" x2="560" y2="202"/><line x1="60" y1="254" x2="560" y2="254"/>
+<line x1="60" y1="20" x2="60" y2="280"/><line x1="226.7" y1="20" x2="226.7" y2="280"/><line x1="393.3" y1="20" x2="393.3" y2="280"/><line x1="560" y1="20" x2="560" y2="280"/>
+</g>
+<rect x="60" y="20" width="500" height="260" fill="none" stroke="var(--muted)" stroke-width="0.8"/>
+<text x="54" y="50" text-anchor="end">1.22</text><text x="54" y="102" text-anchor="end">1.21</text><text x="54" y="154" text-anchor="end">1.20</text><text x="54" y="206" text-anchor="end">1.19</text><text x="54" y="258" text-anchor="end">1.18</text>
+<text x="60" y="298" text-anchor="middle">0</text><text x="226.7" y="298" text-anchor="middle">100</text><text x="393.3" y="298" text-anchor="middle">200</text><text x="560" y="298" text-anchor="middle">300</text>
+<text x="560" y="320" text-anchor="end">ILOAD (mA)</text><text x="60" y="12">VOUT (V)</text>
+<line x1="60" y1="56.4" x2="560" y2="56.4" stroke="var(--spec)" stroke-width="2"/><text x="554" y="51" text-anchor="end" fill="var(--spec)">+1.5% (1.218 V)</text>
+<line x1="60" y1="243.6" x2="560" y2="243.6" stroke="var(--spec)" stroke-width="2"/><text x="554" y="238" text-anchor="end" fill="var(--spec)">−1.5% (1.182 V)</text>
+<line x1="60" y1="150" x2="560" y2="168.7" stroke="var(--c1)" stroke-width="2.2"/>
+<line x1="60" y1="108.4" x2="560" y2="124" stroke="var(--c2)" stroke-width="2.2" stroke-dasharray="7 4"/>
+<line x1="60" y1="181.2" x2="560" y2="206.2" stroke="var(--c3)" stroke-width="2.2" stroke-dasharray="2 3"/>
+<line x1="60" y1="124" x2="560" y2="138" stroke="var(--c4)" stroke-width="2.2" stroke-dasharray="9 3 2 3"/>
+<line x1="60" y1="196.8" x2="560" y2="218.6" stroke="var(--c5)" stroke-width="2.2" stroke-dasharray="5 3"/>
+</g></svg>
+<div class="lg" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-top:8px">
+<div><i style="background:var(--c1)"></i>TT 25°C</div><div><i style="background:var(--c2)"></i>SS −40°C</div><div><i style="background:var(--c3)"></i>SS 125°C</div><div><i style="background:var(--c4)"></i>FF −40°C</div><div><i style="background:var(--c5)"></i>FF 125°C</div><div><i style="background:var(--spec)"></i>Spec</div>
+</div>
+</div>
+<p class="cap">Slope is load regulation; vertical offset is the DC error from offset and divider mismatch. Hot corners sit lowest and slope most because loop gain drops as the pass device heats up.</p>
+
+<h3 id="lrtable">Worst-case summary</h3>
+<div class="pie">
+  <div class="donut" style="background:conic-gradient(var(--c3) 0 26.2%,var(--c5) 26.2% 49.2%,var(--c1) 49.2% 68.9%,var(--c2) 68.9% 85.2%,var(--c4) 85.2% 100%)" role="img" aria-label="Share of total load-regulation slope by corner"><span>61 mV/A<br>total</span></div>
+  <div class="lg">
+    <div><i style="background:var(--c3)"></i>SS 125°C · 16 mV/A (26%)</div>
+    <div><i style="background:var(--c5)"></i>FF 125°C · 14 mV/A (23%)</div>
+    <div><i style="background:var(--c1)"></i>TT 25°C · 12 mV/A (20%)</div>
+    <div><i style="background:var(--c2)"></i>SS −40°C · 10 mV/A (16%)</div>
+    <div><i style="background:var(--c4)"></i>FF −40°C · 9 mV/A (15%)</div>
+  </div>
+</div>
+<div class="tw"><table>
+<thead><tr><th>Rank</th><th>Corner</th><th>VOUT at 1 mA</th><th>VOUT at 300 mA</th><th>Load reg (spec ≤ 20 mV/A)</th><th>VOUT error (spec ≤ 1.5%)</th><th>Result</th></tr></thead>
+<tbody id="lrt"></tbody></table></div>
+<div class="tw" style="margin-top:12px"><table>
+<thead><tr><th>Statistic</th><th>Load reg (mV/A)</th><th>VOUT error (%)</th></tr></thead>
+<tbody>
+<tr><td>Typical (TT 25°C)</td><td class="n cool">12.0</td><td class="n cool">0.30</td></tr>
+<tr><td>Mean of corners</td><td class="n cool">12.2</td><td class="n cool">0.68</td></tr>
+<tr><td>Max</td><td class="n mid">16.0</td><td class="n mid">1.10</td></tr>
+<tr><td>Std dev of corners</td><td class="n">2.8</td><td class="n">0.33</td></tr>
+<tr><td>Worst margin to spec</td><td class="n cool">4.0 (20%)</td><td class="n mid">0.40 (27%)</td></tr>
+</tbody></table></div>
+
+<h3 id="lrade">ADE XL outputs</h3>
+<div class="tw"><table>
+<thead><tr><th>Output</th><th>Expression</th><th>Spec</th></tr></thead>
+<tbody>
+<tr><td><code>VOUT</code></td><td><code>VS("/$DUT_OUTPUT")</code></td><td>plot only</td></tr>
+<tr><td><code>load_reg_mV_per_A</code></td><td><code>1000*(value(VS("/$DUT_OUTPUT") 1m) - value(VS("/$DUT_OUTPUT") 300m))/(300m - 1m)</code></td><td>&lt; 20</td></tr>
+<tr><td><code>VOUT_err_pct</code></td><td><code>100*ymax(abs(VS("/$DUT_OUTPUT") - VOUT_NOM))/VOUT_NOM</code></td><td>&lt; 1.5</td></tr>
+<tr><td><code>headroom_V</code></td><td><code>value(VS("/$DUT_POWER") - VS("/$DUT_OUTPUT") 300m)</code></td><td>info</td></tr>
+</tbody></table></div>
+
+<div class="banner" id="script">5 · SKILL script: add the load regulation test</div>
+<ol class="steps">
+<li>Edit sections 1 to 3 of the script: library, testbench cell, setup view, and the four net names.</li>
+<li>Close the setup in the GUI, or open it read-only, so the script can open it for editing.</li>
+<li>Paste into the CIW, or save as <code>ldo_loadreg_setup.il</code> and run <code>load("ldo_loadreg_setup.il")</code>.</li>
+<li>Reopen the setup. The new test <code>LDO_LoadReg</code> runs against your existing corners, with pass/fail against the two specs.</li>
+</ol>
+<div class="note">Built on the ADE Assembler <code>mae*</code> SKILL API (IC6.1.8 and newer). It has not been run on your install. The script prints the DC analysis settings after it sets them; if the sweep is empty, set the <code>iload</code> sweep once by hand and the outputs and specs still apply. Classic ADE XL on IC6.1.7 uses the older <code>axl*</code> API instead.</div>
+<div class="codehd"><b>ldo_loadreg_setup.il</b><button id="copyBtn" type="button">Copy script</button></div>
+<pre id="skill">;; ====================================================================
+;; ldo_loadreg_setup.il
+;; Adds an LDO load-regulation test to an existing ADE XL / ADE Assembler
+;; (maestro) setup whose testbench schematic already has the LDO hooked up.
+;;
+;; How to use
+;;   1. Edit the values in sections 1 to 3 below.
+;;   2. Close the setup view in the GUI (or open it read-only) so this
+;;      script can open it for editing.
+;;   3. In the CIW:   load("ldo_loadreg_setup.il")
+;;
+;; Testbench assumptions
+;;   - A DC current sink from DUT_OUTPUT to ground, value = ILOAD_VAR
+;;   - A DC voltage source on DUT_POWER, value = VIN_VAR
+;;   - Output cap and ESR already on the schematic
+;;
+;; Needs the mae* SKILL API: IC6.1.8 with ADE Assembler, or IC23 / IC25.
+;; Not tested on your install; check the printed DC analysis settings.
+;; ====================================================================
+let((
+    ;; ---------- 1. Where the setup lives ----------
+    (LIB        "myLib")        ; library holding the adexl / maestro view
+    (CELL       "tb_ldo")       ; testbench cell
+    (VIEW       "adexl")        ; "adexl" or "maestro"
+    (TB_VIEW    "schematic")    ; testbench schematic view
+    (TEST       "LDO_LoadReg")  ; name of the test this script adds
+
+    ;; ---------- 2. Net and instance names ----------
+    (DUT        "I0")           ; $DUT        LDO instance in the testbench
+    (DUT_POWER  "VIN")          ; $DUT_POWER  net on the LDO input pin
+    (DUT_GND    "GND")          ; $DUT_GND    net on the LDO ground pin
+    (DUT_OUTPUT "VOUT")         ; $DUT_OUTPUT net on the LDO output pin
+    (ILOAD_VAR  "iload")        ; design variable on the DC load sink
+    (VIN_VAR    "vin")          ; design variable on the VIN source
+
+    ;; ---------- 3. Operating point and spec limits ----------
+    (VIN_VAL      "1.8")
+    (VOUT_NOM     "1.2")
+    (ILOAD_MIN    "1m")
+    (ILOAD_MAX    "300m")
+    (NPTS         "31")
+    (SPEC_LOADREG "20")         ; load regulation, mV/A, max
+    (SPEC_ERR     "1.5")        ; VOUT error over load, %, max
+    (RUN          t)            ; t = set up and run, nil = set up only
+
+    sess vs vp dcOpts outs hist ok)
+
+  ;; ---------- open the setup ----------
+  sess = maeOpenSetup(LIB CELL VIEW ?mode "a")
+  unless(sess
+    error("ldo_loadreg: cannot open %s/%s/%s for editing. Close it in the GUI and retry.\n"
+          LIB CELL VIEW))
+  when(member(TEST maeGetSetup(?session sess))
+    error("ldo_loadreg: test %s already exists. Change TEST or delete that test first.\n" TEST))
+
+  ;; ---------- test and design variables ----------
+  maeCreateTest(TEST ?lib LIB ?cell CELL ?view TB_VIEW ?simulator "spectre" ?session sess)
+  maeSetVar(VIN_VAR    VIN_VAL   ?session sess)
+  maeSetVar("VOUT_NOM" VOUT_NOM  ?session sess)
+  maeSetVar(ILOAD_VAR  ILOAD_MIN ?session sess)
+
+  ;; ---------- DC sweep of the load current ----------
+  dcOpts = `(("saveOppoint" t) ("param" ,ILOAD_VAR)
+             ("start" ,ILOAD_MIN) ("stop" ,ILOAD_MAX) ("lin" ,NPTS))
+  ;; argument order changed between releases, so try both forms
+  ok = errset(maeSetAnalysis(TEST "dc" ?enable t ?options dcOpts ?session sess))
+  unless(ok &amp;&amp; car(ok)
+    ok = errset(maeSetAnalysis("dc" ?enable t ?options dcOpts ?session sess)))
+  unless(ok &amp;&amp; car(ok)
+    printf("ldo_loadreg: could not set the DC sweep. Set it by hand: sweep %s from %s to %s.\n"
+           ILOAD_VAR ILOAD_MIN ILOAD_MAX))
+  printf("ldo_loadreg: DC analysis now reads %L\n"
+         car(errset(maeGetAnalysis(TEST "dc" ?session sess))))
+
+  ;; ---------- outputs and specs ----------
+  vs = sprintf(nil "VS(\"/%s\")" DUT_OUTPUT)
+  vp = sprintf(nil "VS(\"/%s\")" DUT_POWER)
+  outs = list(
+    list("VOUT"              vs nil nil)
+    list("VOUT_light"        sprintf(nil "value(%s %s)" vs ILOAD_MIN) nil nil)
+    list("VOUT_heavy"        sprintf(nil "value(%s %s)" vs ILOAD_MAX) nil nil)
+    list("load_reg_mV_per_A" sprintf(nil "1000*(value(%s %s) - value(%s %s))/(%s - %s)"
+                                     vs ILOAD_MIN vs ILOAD_MAX ILOAD_MAX ILOAD_MIN)
+                             "lt" SPEC_LOADREG)
+    list("VOUT_err_pct"      sprintf(nil "100*ymax(abs(%s - VOUT_NOM))/VOUT_NOM" vs)
+                             "lt" SPEC_ERR)
+    list("headroom_V"        sprintf(nil "value(%s - %s %s)" vp vs ILOAD_MAX) nil nil))
+  foreach(o outs
+    maeAddOutput(nth(0 o) TEST ?expr nth(1 o) ?session sess)
+    when(nth(2 o)
+      maeSetSpec(nth(0 o) TEST ?lt nth(3 o) ?session sess)))
+
+  ;; ---------- save, then optionally run ----------
+  maeSaveSetup(?lib LIB ?cell CELL ?view VIEW ?session sess)
+  printf("ldo_loadreg: test %s saved in %s/%s/%s (DUT %s, GND net %s).\n"
+         TEST LIB CELL VIEW DUT DUT_GND)
+  when(RUN
+    hist = maeRunSimulation(?session sess)
+    maeWaitUntilDone('All)
+    printf("ldo_loadreg: run finished, history %L. Open the view to see pass/fail per corner.\n" hist)
+    errset(maeExportOutputView(?session sess
+                               ?fileName strcat("./" TEST "_results.csv")
+                               ?view "Detail")))
+  sess)
+</pre>
+
+<div class="banner" id="refs">6 · Reference, public online data</div>
+<ol class="refs">
+<li><a href="https://doi.org/10.1109/JSSC.2004.842831">P. Hazucha et al., "Area-efficient linear regulator with ultra-fast load regulation," IEEE JSSC, vol. 40, no. 4, 2005</a><br><small>Source of the response-time figure of merit (Hazucha FOM).</small></li>
+<li><a href="https://www.ti.com/lit/pdf/sszta58">TI SSZTA58, LDO Basics: Current Limit</a><br><small>Brick-wall vs foldback current limit.</small></li>
+<li><a href="https://www.ti.com/lit/ds/symlink/tlv717p.pdf">TI TLV717P datasheet</a><br><small>Real foldback curve, 350 mA onset and 40 mA short-circuit current.</small></li>
+<li><a href="https://www.ti.com/lit/an/sbva097/sbva097.pdf">TI SBVA097, LDO Current Limit Behavior During Dropout Operation</a><br><small>Hybrid brick-wall and foldback scheme.</small></li>
+<li><a href="https://e2e.ti.com/support/power-management-group/power-management/f/power-management-forum/1303903/tps746-q1-foldback-current-limit">TI E2E, TPS746-Q1 foldback current limit</a><br><small>Current limit measured at 85% of VOUT nominal.</small></li>
+<li><a href="https://www.ti.com/lit/pdf/ssztad7">TI SSZTAD7, LDO Basics: Power Supply Rejection Ratio</a><br><small>PSRR versus frequency, headroom and COUT.</small></li>
+<li><a href="https://www.ti.com/lit/pdf/slaa414">TI SLAA414, LDO PSRR Measurement Simplified</a><br><small>Measurement methods for the PSRR check.</small></li>
+<li><a href="https://www.ti.com/lit/an/slyt202/slyt202.pdf">TI SLYT202, Analog Applications Journal, PSRR in LDO applications</a><br><small>Why PSRR drops at heavy load and near dropout.</small></li>
+<li><a href="https://www.ti.com/lit/slaa412">TI SLAA412, LDO Noise Demystified</a><br><small>Noise density vs integrated noise, and why bandwidth belongs in the spec.</small></li>
+<li><a href="https://www.ti.com/lit/pdf/slyt201">TI SLYT201, Understanding noise in linear regulators</a><br><small>Output-referred noise and its main sources.</small></li>
+<li><a href="https://www.ti.com/lit/pdf/sszt658">TI SSZT658, LDO Basics: Preventing Reverse Current</a><br><small>Body-diode path and blocking methods for the reverse current check.</small></li>
+<li><a href="https://www.ti.com/lit/sbva026">TI SBVA026, A Topical Index of TI LDO Application Notes</a><br><small>Index to the rest of the TI LDO app notes.</small></li>
+<li><a href="https://www.ti.com/lit/an/slva289b/slva289b.pdf">TI SLVA289B, Feedforward capacitor for internally compensated converters</a><br><small>Feedback divider and feed-forward zero, from this project's earlier page.</small></li>
+<li><a href="https://aicdesign.org/wp-content/uploads/2018/08/lecture23-160311.pdf">P. E. Allen, CMOS Analog Circuit Design, Lecture 23: Two-Stage Op Amps</a><br><small>Miller compensation values used for the error-amp model.</small></li>
+<li><a href="https://community.cadence.com/cadence_technology_forums/f/custom-ic-skill/39777/maestro-cannot-set-analysis-for-test-using-skill">Cadence Community, maestro SKILL: maeCreateTest and maeSetAnalysis</a><br><small>Working example of the calls the script uses.</small></li>
+<li><a href="https://community.cadence.com/cadence_technology_forums/f/custom-ic-design/46746/how-to-evaluate-the-variable-in-a-maestro-measurement-expression-and-not-treat-it-as-a-literal-string">Cadence Community, building maeAddOutput expressions from variables</a><br><small>Why the script builds each expression with sprintf.</small></li>
+</ol>
+<p class="cap">Chart data on this page is illustrative. Figures and text from the linked documents remain the property of their owners.</p>
+</div>
+
+<script>
+const T={1:['k1','Tier 1'],2:['k2','Tier 2'],3:['k3','Tier 3'],4:['k4','Tier 4']};
+const C=[["Stability", 1, "STB", "DC gain ≥ 60 dB, PM ≥ 45°, GM ≥ 10 dB", 60], ["Dropout", 1, "DC sweep VIN", "VDO ≤ 200 mV at 300 mA", 45], ["Current limit", 1, "DC, forced VOUT", "400 ≤ ILIM ≤ 700 mA", 15], ["Load transient", 2, "Tran", "ΔVOUT ≤ 3% for 0.3 A/µs", 15], ["PSRR", 2, "AC", "≥ 60 dB at 1 kHz, ≥ 20 dB at 1 MHz", 45], ["Line transient", 2, "Tran", "ΔVOUT ≤ 1% for 1 V/µs", 15], ["Startup", 2, "Tran from EN", "tSS 0.2 to 1 ms, OS ≤ 2%, IIN ≤ 400 mA", 30], ["Accuracy and regulation", 3, "DC sweep", "≤ 20 mV/A, error ≤ 1.5%", 45], ["VREF trim", 3, "DC trim sweep + MC", "range ≥ ±30 mV, post-trim ±0.25%", 5], ["Offset Monte Carlo", 3, "Monte Carlo", "|μ|+3σ ≤ 4 mV, Cpk ≥ 1.33", 500], ["Quiescent current", 3, "DC log sweep", "IQ ≤ 50 µA, η ≥ 90% at 1 mA", 15], ["Reverse current", 1, "DC, VOUT > VIN", "IREV ≤ 10 µA", 30], ["Thermal shutdown", 1, "DC temp sweep", "150 ≤ TSD ≤ 170 °C", 5], ["Noise", 3, "Noise", "≤ 50 µVrms, 10 Hz to 100 kHz", 15], ["EM / IR and aging", 4, "EMIR + aging", "J/Jmax ≤ 1, ΔVOUT ≤ 0.5% at 5 yr", 10]];
+const mx=Math.log10(500);
+document.getElementById('ck').innerHTML=C.map((r,i)=>{const w=Math.max(6,Math.log10(r[4])/mx*110);const cls=r[4]>=100?'hot':r[4]>=30?'mid':'cool';
+return `<tr><td class="rank">#${i+1}</td><td><a href="#c${i+1}">${r[0]}</a></td><td><span class="chip ${T[r[1]][0]}">${T[r[1]][1]}</span></td><td>${r[2]}</td><td>${r[3]}</td><td><div class="barc"><div class="bar" style="width:${w}px"></div><span class="${cls}">${r[4]}</span></div></td></tr>`}).join('');
+const L=[['SS 125°C','--c3',-6,16],['FF 125°C','--c5',-9,14],['TT 25°C','--c1',0,12],['SS −40°C','--c2',8,10],['FF −40°C','--c4',5,9]];
+const rows=L.map(r=>{const v0=1.2+r[2]/1000,v3=1.2+(r[2]-r[3]*0.3)/1000,err=Math.max(Math.abs(r[2]),Math.abs(r[2]-r[3]*0.3))/12;return{n:r[0],c:r[1],v0,v3,lr:r[3],err}}).sort((a,b)=>b.err-a.err);
+const cl=(v,s)=>v/s>0.7?'mid':'cool';
+document.getElementById('lrt').innerHTML=rows.map((r,i)=>`<tr><td class="rank">#${i+1}</td><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${r.c});margin-right:6px"></span>${r.n}</td><td class="n">${r.v0.toFixed(4)} V</td><td class="n">${r.v3.toFixed(4)} V</td><td><div class="barc"><div class="bar" style="width:${r.lr/20*110}px"></div><span class="${cl(r.lr,20)}">${r.lr.toFixed(1)}</span></div></td><td><div class="barc"><div class="bar" style="width:${r.err/1.5*110}px"></div><span class="${cl(r.err,1.5)}">${r.err.toFixed(2)}</span></div></td><td><span class="chip pass">Pass</span></td></tr>`).join('');
+const btn=document.getElementById('copyBtn'),pre=document.getElementById('skill');
+btn.addEventListener('click',()=>{const t=pre.textContent;const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selected, press Ctrl+C'};
+try{navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy script',1800)},sel)}catch(e){sel()}});
+
+(function(){
+const CS={s:'#D85A30',m:'#378ADD',d:'var(--muted)'},RED='#DE350B',lg=Math.log10;
+const PV=[['TT 25°C','#378ADD',''],['SS −40°C','#1D9E75','6 3'],['SS 125°C','#7F77DD','2 2'],['FF −40°C','#BA7517','8 3 2 3'],['FF 125°C','#888780','4 2']];
+const PR=PV.map((p,i)=>[['TT','SS','FF','SF','FS'][i],p[1],p[2]]);
+const LS=(a,b,n)=>Array.from({length:n},(_,i)=>a*Math.pow(b/a,i/(n-1)));
+const LN=(a,b,n)=>Array.from({length:n},(_,i)=>a+(b-a)*i/(n-1));
+const si=v=>{for(const[m,s]of[[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'µ'],[1e-9,'n']])if(Math.abs(v)>=m*0.999)return +(v/m).toFixed(2)+s;return v};
+const g=(u,t)=>u>0?(u/t)*Math.exp(1-u/t):0,sm=(u,t)=>u>0?1-Math.exp(-u/t):0;
+const fam=(f,N=PV)=>N.map((p,k)=>({n:p[0],c:p[1],d:p[2],pts:f(k)}));
+let sd=20260930;const rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const gau=()=>Math.sqrt(-2*Math.log(rnd()+1e-12))*Math.cos(2*Math.PI*rnd());
+const OFS=Array.from({length:500},()=>0.25+1.1*gau()),TRM=Array.from({length:500},()=>0.04*gau()+(rnd()-0.5)*0.167);
+const st=a=>{const m=a.reduce((x,y)=>x+y,0)/a.length;return{m,s:Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1))}};
+function mc(id,ti,a,lo,hi,nb,spec,xl,xt,dp){const S=st(a),w=(hi-lo)/nb,c=Array(nb).fill(0);a.forEach(v=>{const i=Math.floor((v-lo)/w);if(i>=0&&i<nb)c[i]++});
+const ym=Math.ceil(Math.max(...c)*1.3/10)*10,fit=LN(lo,hi,120).map(x=>[x,a.length*w*Math.exp(-((x-S.m)**2)/(2*S.s*S.s))/(S.s*Math.sqrt(2*Math.PI))]);
+return{id,ti,x:[lo,hi],y:[0,ym],xt,yt:[0,ym/2,ym],xf:v=>v.toFixed(dp),yf:v=>Math.round(v),xl,yl:`Count of ${a.length}`,bars:c.map((n,i)=>[lo+i*w,lo+(i+1)*w,n]),
+S:[{n:'Normal fit',c:'#7F77DD',d:'',pts:fit}],mk:[{x:S.m-3*S.s,l:'−3σ',left:1},{x:S.m+3*S.s,l:'+3σ'}],sp:[{x:-spec,l:'LSL',left:1},{x:spec,l:'USL'}],xleg:[['Samples','#85B7EB',''],['μ ± 3σ','#378ADD','5 3']]}}
+function plot(o){const W=380,H=o.h||250,l=50,r=14,t=26,b=36,pw=W-l-r,ph=H-t-b;
+const tx=v=>o.lx?lg(v):v,ty=v=>o.ly?lg(v):v,[x0,x1]=o.x.map(tx),[y0,y1]=o.y.map(ty);
+const X=v=>l+(tx(v)-x0)/(x1-x0)*pw,Y=v=>t+ph-(ty(v)-y0)/(y1-y0)*ph;
+let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.ti}"><defs><clipPath id="cp${o.id}"><rect x="${l}" y="${t}" width="${pw}" height="${ph}"/></clipPath></defs>`;
+o.xt.forEach(v=>{s+=`<line x1="${X(v)}" y1="${t}" x2="${X(v)}" y2="${t+ph}" stroke="var(--line)" stroke-width="0.6"/><text class="ts" x="${X(v)}" y="${t+ph+15}" text-anchor="middle">${(o.xf||si)(v)}</text>`});
+o.yt.forEach(v=>{s+=`<line x1="${l}" y1="${Y(v)}" x2="${l+pw}" y2="${Y(v)}" stroke="var(--line)" stroke-width="0.6"/><text class="ts" x="${l-5}" y="${Y(v)+4}" text-anchor="end">${(o.yf||si)(v)}</text>`});
+s+=`<rect x="${l}" y="${t}" width="${pw}" height="${ph}" fill="none" stroke="var(--muted)" stroke-width="0.6"/><text class="ts" x="${l}" y="16">${o.yl}</text><text class="ts" x="${l+pw}" y="${H-4}" text-anchor="end">${o.xl}</text>`;
+(o.bars||[]).forEach(q=>{if(q[2])s+=`<rect x="${X(q[0])+0.5}" y="${Y(q[2])}" width="${Math.max(X(q[1])-X(q[0])-1,1)}" height="${Y(0)-Y(q[2])}" fill="#85B7EB"/>`});
+o.S.forEach(q=>{s+=`<polyline clip-path="url(#cp${o.id})" fill="none" stroke="${q.c}" stroke-width="1.6" stroke-dasharray="${q.d}" points="${q.pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')}"/>`});
+(o.mk||[]).forEach(p=>{s+=`<line x1="${X(p.x)}" y1="${t}" x2="${X(p.x)}" y2="${t+ph}" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 3"/><text class="ts" x="${X(p.x)+(p.left?-4:4)}" y="${t+30}" text-anchor="${p.left?'end':'start'}" style="fill:#378ADD">${p.l}</text>`});
+(o.sp||[]).forEach(p=>{let d,lx,ly,an='end';
+if(p.y!==undefined){d=`M${l} ${Y(p.y)} L${l+pw} ${Y(p.y)}`;lx=l+pw-4;ly=Y(p.y)+(p.below?14:-5)}
+else if(p.x!==undefined){d=`M${X(p.x)} ${t} L${X(p.x)} ${t+ph}`;lx=X(p.x)+(p.left?-4:4);ly=t+12+(p.dy||0);an=p.left?'end':'start'}
+else{d='M'+p.pts.map(q=>X(q[0])+' '+Y(q[1])).join(' L');lx=X(p.pts[0][0])+4;ly=Y(p.pts[0][1])-5;an='start'}
+s+=`<path d="${d}" fill="none" stroke="${RED}" stroke-width="1.8"/><text class="ts" x="${lx}" y="${ly}" text-anchor="${an}" style="fill:${RED}">${p.l}</text>`});
+(o.dots||[]).forEach(p=>{s+=`<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3.5" fill="${p[2]}" stroke="var(--bg)" stroke-width="1"/>`});
+return s+'</svg>'}
+const sw=(n,c,d)=>`<span><svg width="22" height="8" aria-hidden="true" style="display:inline;width:22px"><line x1="0" y1="4" x2="22" y2="4" stroke="${c}" stroke-width="${n=='Samples'?6:2}" stroke-dasharray="${d}"/></svg>${n}</span>`;
+const dot=n=>`<span><svg width="10" height="10" aria-hidden="true" style="display:inline;width:10px"><circle cx="5" cy="5" r="4" fill="var(--muted)"/></svg>${n}</span>`;
+const leg=o=>`<div class="leg">${o.cleg?o.cleg.map(q=>q[1]=='dot'?dot(q[0]):sw(...q)).join(''):(o.xleg||[]).map(q=>sw(...q)).join('')+o.S.map(q=>sw(q.n,q.c,q.d)).join('')}${o.stim?'':sw('Spec',RED,'')}</div>`;
+const dec=(a,b)=>{let r=[];for(let e=a;e<=b;e++)r.push(Math.pow(10,e));return r};
+const TT=LN(0,100,500),t7=LN(0,1.5,600);
+const stim=(id,n,y,yt,yl,pts)=>({id,h:150,ti:'Stimulus',x:[0,100],y,xt:[0,20,40,60,80,100],yt,xf:v=>v,yf:v=>v,xl:'Time (µs)',yl,S:[{n,c:CS.s,d:'',pts}],stim:1});
+const SPV=[['TT 25°C','#378ADD',1,0],['SS 125°C','#7F77DD',0.55,-3],['FF −40°C','#BA7517',1.3,2]];
+const SLE=[['300 mA','5 mΩ','',1,0.005],['300 mA','100 mΩ','6 3',1,0.1],['10 µA','5 mΩ','2 2',0,0.005],['10 µA','100 mΩ','8 3 2 3',0,0.1]];
+const SC=[];SPV.forEach(p=>SLE.forEach(q=>{const hi=q[3],A=(hi?62:80)+p[3],gbw=hi?1.2e6:1.5e5;SC.push({n:`${p[0]}, ${q[0]}, ${q[1]}`,c:p[1],d:q[2],A,p1:gbw/Math.pow(10,A/20),p2:(hi?3e6:6e5)*p[2],p3:3e7,z:1/(2*Math.PI*q[4]*1e-6)})}));
+const FB=LS(1,1e8,400);
+const bm=(c,f)=>c.A+10*lg(1+(f/c.z)**2)-[c.p1,c.p2,c.p3].reduce((s,p)=>s+10*lg(1+(f/p)**2),0);
+const bp=(c,f)=>180+(Math.atan(f/c.z)-Math.atan(f/c.p1)-Math.atan(f/c.p2)-Math.atan(f/c.p3))*180/Math.PI;
+const ugf=c=>{for(let i=1;i<FB.length;i++)if(bm(c,FB[i])<0){const a=FB[i-1],b=FB[i],ma=bm(c,a),mb=bm(c,b);return Math.pow(10,lg(a)+(lg(b)-lg(a))*ma/(ma-mb))}return 1e8};
+const gmf=c=>{for(let i=1;i<FB.length;i++)if(bp(c,FB[i])<0)return -bm(c,FB[i]);return 60};
+const Ron=[0.50,0.46,0.62,0.40,0.55],IL=[560,610,470,650,520];
+const A4=[28,33,34,22,26],v4=(k,t)=>1.2-A4[k]/1e3*g(t-20,1.5)+0.9*A4[k]/1e3*g(t-60,1.5)-0.003*(sm(t-20,2)-sm(t-60,2));
+const A0=[70,74,64,76,66],ps=(k,f)=>A0[k]-10*lg(1+(f/2e4)**2)+10*lg(1+(f/3e6)**2);
+const A6=[6,8,9,5,7],v6=(k,t)=>1.2+A6[k]/1e3*g(t-20,2)-A6[k]/1e3*g(t-60,2)+0.001*(sm(t-20,3)-sm(t-60,3));
+const TS=[0.40,0.48,0.55,0.32,0.42],OS=[0.6,0.4,0.9,1.2,0.8];
+const v7=(k,t)=>{const T=TS[k];if(t<=0)return 0;if(t<T){const u=t/T;return 1.2*u*u*(3-2*u)}const u=(t-T)/0.05;return 1.2*(1+OS[k]/100*u*Math.exp(1-u))};
+const i7=(k,t)=>{const h=1e-3;return 47e-6*(v7(k,t+h)-v7(k,t))/(h*1e-3)+v7(k,t)/12+30e-6};
+const OF=[0,8,-6,5,-9],SL=[12,10,16,9,14],v8=(k,I)=>1.2+(OF[k]-SL[k]*I/1e3)/1e3;
+const IQ0=[32,26,44,30,40],iq=(k,I)=>IQ0[k]*1e-6+0.002*I;
+const TR=[160,164,157,162,159];
+const EN=[90,80,120,75,110],FC=[1e3,1.5e3,800,1.2e3,900],Sn=(k,f)=>EN[k]*Math.sqrt(1+FC[k]/f)/Math.sqrt(1+(f/3e5)**2);
+const FN=LS(10,1e6,240),vn=k=>{let a=0,r=[[10,0]];for(let i=1;i<FN.length;i++){const f0=FN[i-1],f1=FN[i];a+=0.5*(Sn(k,f0)**2+Sn(k,f1)**2)*(f1-f0);r.push([f1,Math.sqrt(a)/1e3])}return r};
+const R0=[0.40,0.38,0.45,0.42,0.47],AG=[1.5,1.2,2.4,1.0,2.0];
+const TOF=[12,-18,25,-9,5],TLS=[1.0,0.97,1.03,0.98,1.02],vr=(k,c)=>0.6+(TOF[k]+(c-32)*TLS[k])/1e3;
+const RA=[1.5,1.0,3.0,1.2,2.5],irev=(k,v)=>1e-10+RA[k]*1e-9*(Math.exp(v/0.15)-1);
+const O='VT("/$DUT_OUTPUT")',LG='getData("loopGain" ?result "stb")',VRS='VS("/$DUT/VREF")';
+const MO=[['MC 500 pts, mismatch']];
+const K=[
+['Stability',{vfb:'m'},'stb','Break loop at VFB; PVT × ILOAD × ESR min/max','DC gain, PM, GM at every corner',()=>{
+const S1=SC.map(c=>({n:c.n,c:c.c,d:c.d,pts:FB.map(f=>[f,bm(c,f)])})),S2=SC.map(c=>({n:c.n,c:c.c,d:c.d,pts:FB.map(f=>[f,bp(c,f)])})),dots=SC.map(c=>{const u=ugf(c);return[u,bp(c,u),c.c]});
+return{N:SC.map(c=>[c.n]),cleg:[...SPV.map(p=>[p[0],p[1],'']),...SLE.map(q=>[`${q[0]}, ESR ${q[1]}`,'var(--muted)',q[2]]),['Phase at UGF','dot']],
+ch:[{id:101,ti:'Loop gain magnitude',lx:1,x:[1,1e8],y:[-60,100],xt:[1,100,1e4,1e6,1e8],yt:[-60,-20,0,20,60,100],yf:v=>v,xl:'Frequency (Hz)',yl:'|T| (dB)',S:S1,sp:[{pts:[[1,60],[1e3,60]],l:'DC gain ≥ 60 dB'}]},
+{id:102,ti:'Loop gain phase (PM = phase at UGF)',lx:1,x:[1,1e8],y:[-90,180],xt:[1,100,1e4,1e6,1e8],yt:[-90,0,45,90,180],yf:v=>v,xl:'Frequency (Hz)',yl:'∠T (°), Spectre stb',S:S2,dots,sp:[{y:45,l:'PM ≥ 45°',below:1}]}],
+kp:[{l:'Min DC loop gain',b:'hi',s:60,u:' dB',v:k=>SC[k].A,dp:0},{l:'Min phase margin',b:'hi',s:45,u:'°',v:k=>bp(SC[k],ugf(SC[k]))},{l:'Min gain margin',b:'hi',s:10,u:' dB',v:k=>gmf(SC[k])},{l:'Max UGF',b:'lo',s:5,u:' MHz',v:k=>ugf(SC[k])/1e6,dp:2}]}},
+[['DC_gain',`value(dB20(${LG}) 1)`],['PM',`phaseMargin(${LG})`],['GM',`gainMargin(${LG})`],['UGF',`cross(dB20(${LG}) 0 1 "falling")`]],'stb 1 Hz to 100 MHz, probe = IPRB inside $DUT on the VFB branch. Assembler corners: PVT × iload {10u, 300m} × resr {5m, 100m}, plus COUT at its derated min and max. Charts show 3 PVT × 4 for readability.'],
+['Dropout',{vin:'s',vout:'m'},'','DC sweep VIN, ILOAD = 300 mA','VDO = VIN − VOUT at 98% VOUT nom',()=>({ch:[{id:103,ti:'Dropout voltage vs load current',x:[0,300],y:[0,250],xt:[0,100,200,300],yt:[0,50,100,150,200,250],xf:v=>v,yf:v=>v,xl:'ILOAD (mA)',yl:'VDO (mV)',S:fam(k=>LN(0,300,40).map(I=>[I,Ron[k]*I+6*(I/300)**2])),sp:[{y:200,l:'VDO ≤ 200 mV'}]}],kp:[{l:'Max VDO at 300 mA',b:'lo',s:200,u:' mV',v:k=>Ron[k]*300+6}]}),
+[['VDO','cross(VS("/$DUT_OUTPUT") 0.98*VOUT_NOM 1 "rising") - 0.98*VOUT_NOM']],'dc sweep var vin from 0 to VIN_MAX; parametric on iload.'],
+['Current limit',{iload:'s',vout:'m'},'short','Force VOUT from 1.2 V down to 0 V','ILIM, ISC, foldback ratio',()=>({ch:[{id:104,ti:'VOUT vs IOUT, foldback to ISC ≈ 35% of ILIM',x:[0,800],y:[0,1.4],xt:[0,200,400,600,800],yt:[0,0.4,0.8,1.2],xf:v=>v,yf:v=>v.toFixed(1),xl:'IOUT (mA)',yl:'VOUT (V)',S:fam(k=>{const L=IL[k];return LN(0,.97*L,20).map(i=>[i,1.2-0.02*i/L]).concat([[L,1.1],[L*1.005,0.85],[0.35*L,0]])}),sp:[{x:400,l:'min',left:1},{x:700,l:'max'}]}],kp:[{l:'Min ILIM',b:'hi',s:400,u:' mA',v:k=>IL[k],dp:0},{l:'Max ILIM',b:'lo',s:700,u:' mA',v:k=>IL[k],dp:0}]}),
+[['ILIM_peak','ymax(-IS("/$DUT/$DUT_OUTPUT"))'],['ILIM_90','value(-IS("/$DUT/$DUT_OUTPUT") 0.9*VOUT_NOM)'],['ISC','value(-IS("/$DUT/$DUT_OUTPUT") 0)'],['PD_short','value(VS("/$DUT_POWER")*IS("/$DUT/$DUT_POWER") 0)']],'dc sweep var vforce (vsource on $DUT_OUTPUT) from VOUT_NOM to 0. A current-sink sweep cannot trace the fold branch. Foldback cuts pass-device power in a short: (VIN − 0) × ISC instead of × ILIM.'],
+['Load transient',{iload:'s',vout:'m'},'step','ILOAD step 1 mA to 300 mA, tr 1 µs','Undershoot, overshoot, tsettle',()=>({ch:[stim(140,'ILOAD',[0,350],[0,100,200,300],'ILOAD (mA)',[[0,1],[20,1],[21,300],[60,300],[61,1],[100,1]]),{id:105,ti:'VOUT, ILOAD 1 → 300 → 1 mA, 1 µs edges (0.3 A/µs), COUT 1 µF',x:[0,100],y:[1.15,1.25],xt:[0,20,40,60,80,100],yt:[1.16,1.18,1.2,1.22,1.24],xf:v=>v,yf:v=>v.toFixed(2),xl:'Time (µs)',yl:'VOUT (V)',S:fam(k=>TT.map(t=>[t,v4(k,t)])),sp:[{y:1.236,l:'+3%'},{y:1.164,l:'−3%',below:1}]}],kp:[{l:'Max undershoot',b:'lo',s:36,u:' mV',v:k=>(1.2-Math.min(...TT.map(t=>v4(k,t))))*1e3},{l:'Max overshoot',b:'lo',s:36,u:' mV',v:k=>(Math.max(...TT.map(t=>v4(k,t)))-1.2)*1e3}]}),
+[['undershoot',`value(${O} 19u) - ymin(clip(${O} 20u 60u))`],['overshoot',`ymax(clip(${O} 60u 100u)) - value(${O} 59u)`],['t_settle',`cross(clip(${O} 20.5u 60u) 0.99*VOUT_NOM 1 "rising") - 20u`],['hazucha_FOM','COUT*undershoot/300m * IQ/300m']],'tran 0 to 100u, strobe ≤ 10n; ILOAD pwl edges at 20u and 60u.'],
+['PSRR',{vin:'s',vout:'m'},'ac','AC 1 V on VIN, ILOAD full','PSRR = 20·log|VIN/VOUT|',()=>({ch:[{id:106,ti:'PSRR vs frequency, ILOAD 300 mA, VIN 1.8 V',lx:1,x:[10,1e7],y:[0,90],xt:dec(1,7),yt:[0,20,40,60,80],yf:v=>v,xl:'Frequency (Hz)',yl:'PSRR (dB)',S:fam(k=>LS(10,1e7,120).map(f=>[f,ps(k,f)])),sp:[{pts:[[10,60],[1e3,60],[1e3,40],[1e5,40],[1e5,20],[1e6,20]],l:'Spec mask'}]}],kp:[{l:'Min PSRR at 1 kHz',b:'hi',s:60,u:' dB',v:k=>ps(k,1e3)},{l:'Min PSRR at 1 MHz',b:'hi',s:20,u:' dB',v:k=>ps(k,1e6)}]}),
+[['PSRR_1k','value(-dB20(VF("/$DUT_OUTPUT")/VF("/$DUT_POWER")) 1k)'],['PSRR_100k','value(-dB20(VF("/$DUT_OUTPUT")/VF("/$DUT_POWER")) 100k)'],['PSRR_1M','value(-dB20(VF("/$DUT_OUTPUT")/VF("/$DUT_POWER")) 1M)'],['PSRR_min','ymin(-dB20(VF("/$DUT_OUTPUT")/VF("/$DUT_POWER")))']],'ac 10 Hz to 10 MHz, acmag 1 on the $DUT_POWER source; repeat near dropout.'],
+['Line transient',{vin:'s',vout:'m'},'vstep','VIN step 2.5 to 3.5 V at 1 V/µs','ΔVOUT, tsettle',()=>({ch:[stim(160,'VIN',[2,4],[2,2.5,3,3.5,4],'VIN (V)',[[0,2.5],[20,2.5],[21,3.5],[60,3.5],[61,2.5],[100,2.5]]),{id:107,ti:'VOUT, VIN 2.5 → 3.5 → 2.5 V, 1 µs edges (1 V/µs), ILOAD 300 mA',x:[0,100],y:[1.18,1.22],xt:[0,20,40,60,80,100],yt:[1.18,1.19,1.2,1.21,1.22],xf:v=>v,yf:v=>v.toFixed(2),xl:'Time (µs)',yl:'VOUT (V)',S:fam(k=>TT.map(t=>[t,v6(k,t)])),sp:[{y:1.212,l:'+1%'},{y:1.188,l:'−1%',below:1}]}],kp:[{l:'Max |ΔVOUT|',b:'lo',s:12,u:' mV',v:k=>Math.max(...TT.map(t=>Math.abs(v6(k,t)-1.2)))*1e3}]}),
+[['dV_up',`ymax(clip(${O} 20u 60u)) - value(${O} 19u)`],['dV_dn',`value(${O} 59u) - ymin(clip(${O} 60u 100u))`]],'tran 0 to 100u; $DUT_POWER source pwl 2.5 to 3.5 V with edges at 20u and 60u.'],
+['Startup',{en:'s',vout:'m',vin:'m'},'en','EN 0 to 1; also VOUT prebias 50%','IIN inrush, VOUT ramp, overshoot',()=>({ch:[{id:108,ti:'VOUT ramp after EN, 47 µF downstream, 12 Ω load',x:[0,1.5],y:[0,1.4],xt:[0,0.5,1,1.5],yt:[0,0.4,0.8,1.2],xf:v=>v,yf:v=>v.toFixed(1),xl:'Time from EN (ms)',yl:'VOUT (V)',S:fam(k=>t7.map(t=>[t,v7(k,t)])),sp:[{y:1.224,l:'OS ≤ 2%'},{x:0.2,l:'tSS min',dy:60},{x:1.0,l:'tSS max',dy:60}]},{id:109,ti:'Input inrush current',x:[0,1.5],y:[0,500],xt:[0,0.5,1,1.5],yt:[0,100,200,300,400,500],xf:v=>v,yf:v=>v,xl:'Time from EN (ms)',yl:'IIN (mA)',S:fam(k=>t7.map(t=>[t,i7(k,t)*1e3])),sp:[{y:400,l:'IIN ≤ 400 mA'}]}],kp:[{l:'Min tSS',b:'hi',s:0.2,u:' ms',v:k=>TS[k],dp:2},{l:'Max tSS',b:'lo',s:1.0,u:' ms',v:k=>TS[k],dp:2},{l:'Max overshoot',b:'lo',s:2,u:'%',v:k=>OS[k]},{l:'Peak inrush',b:'lo',s:400,u:' mA',v:k=>Math.max(...t7.map(t=>i7(k,t)))*1e3,dp:0}]}),
+[['t_ss',`cross(${O} 0.9*VOUT_NOM 1 "rising") - cross(VT("/EN") 0.5*VEN 1 "rising")`],['overshoot_pct',`(ymax(${O}) - VOUT_NOM)/VOUT_NOM*100`],['I_inrush','ymax(IT("/$DUT/$DUT_POWER"))'],['startup_ok',`value(${O} 1.5m) > 0.97*VOUT_NOM`]],'tran 0 to 1.5m; EN pin assumed on net /EN. Rerun with heaviest load and with 50% prebias to catch foldback lockup.'],
+['Accuracy and regulation',{vout:'m',vref:'s'},'','DC sweep ILOAD, then VIN','VOUT error, ΔVOUT/ΔIOUT, ΔVOUT/ΔVIN',()=>({ch:[{id:110,ti:'Load regulation, VOUT vs ILOAD, VIN 1.8 V',x:[0,300],y:[1.175,1.225],xt:[0,100,200,300],yt:[1.18,1.19,1.2,1.21,1.22],xf:v=>v,yf:v=>v.toFixed(2),xl:'ILOAD (mA)',yl:'VOUT (V)',S:fam(k=>LN(0,300,30).map(I=>[I,v8(k,I)])),sp:[{y:1.218,l:'+1.5%'},{y:1.182,l:'−1.5%',below:1}]}],kp:[{l:'Max VOUT error',b:'lo',s:1.5,u:'%',v:k=>Math.max(Math.abs(OF[k]),Math.abs(OF[k]-SL[k]*0.3))/12,dp:2},{l:'Max load regulation',b:'lo',s:20,u:' mV/A',v:k=>SL[k],dp:0}]}),
+[['VOUT_err_pct','ymax(abs(VS("/$DUT_OUTPUT") - VOUT_NOM))/VOUT_NOM*100'],['load_reg','(value(VS("/$DUT_OUTPUT") 1m) - value(VS("/$DUT_OUTPUT") 300m))/(300m - 1m)'],['line_reg','(value(VS("/$DUT_OUTPUT") VIN_MAX) - value(VS("/$DUT_OUTPUT") VIN_MIN))/(VIN_MAX - VIN_MIN)']],'load_reg test sweeps iload; line_reg test sweeps vin. Section 4 and the SKILL script in section 5 set this test up automatically.'],
+['VREF trim',{vref:'m'},'trim','Sweep trim code 0 to 63 at each corner','VREF range, LSB, DNL, post-trim error',()=>({ch:[{id:111,ti:'VREF vs 6-bit trim code, untrimmed offset per corner',x:[0,63],y:[0.56,0.64],xt:[0,16,32,48,63],yt:[0.56,0.58,0.6,0.62,0.64],xf:v=>v,yf:v=>v.toFixed(2),xl:'Trim code',yl:'VREF (V)',S:fam(k=>Array.from({length:64},(_,c)=>[c,vr(k,c)])),sp:[{y:0.6015,l:'±0.25%'},{y:0.5985,l:'',below:1}]},mc(112,'Post-trim VREF error, Monte Carlo at TT 25°C',TRM,-0.3,0.3,30,0.25,'VREF error (%)',[-0.3,-0.15,0,0.15,0.3],2)],kp:[{l:'Min trim range, one side',b:'hi',s:30,u:' mV',v:k=>32*TLS[k]},{l:'Max LSB',b:'lo',s:1.5,u:' mV',v:k=>TLS[k],dp:2},{l:'Post-trim |μ| + 3σ',b:'lo',s:0.25,u:'%',v:()=>{const S=st(TRM);return Math.abs(S.m)+3*S.s},dp:3,one:1}]}),
+[['VREF',VRS],['LSB',`(value(${VRS} 63) - value(${VRS} 0))/63`],['range_lo',`value(${VRS} 0) - VREF_NOM`],['range_hi',`value(${VRS} 63) - VREF_NOM`],['DNL_max',`ymax(abs(deriv(${VRS})/LSB - 1))`]],'dc sweep var trim 0 to 63 step 1, trim bus driven from the design variable through a Verilog-A code source. Post-trim MC: pick the best code per point in OCEAN, then report the error.'],
+['Offset Monte Carlo',{vfb:'m',vref:'m'},'mc','Monte Carlo mismatch, 500 pts, worst corner','Vos = VFB − VREF, μ, σ, Cpk',()=>{const S=st(OFS);return{N:MO,ch:[mc(113,`EA input offset, μ = ${S.m.toFixed(2)} mV, σ = ${S.s.toFixed(2)} mV`,OFS,-6,6,36,4,'Vos (mV)',[-6,-4,-2,0,2,4,6],0)],kp:[{l:'|μ| + 3σ',b:'lo',s:4,u:' mV',v:()=>Math.abs(S.m)+3*S.s,dp:2},{l:'Cpk',b:'hi',s:1.33,u:'',v:()=>Math.min(4-S.m,S.m+4)/(3*S.s),dp:2}]}},
+[['Vos','VDC("/$DUT/VFB") - VDC("/$DUT/VREF")'],['VOUT_err','VDC("/$DUT_OUTPUT") - VOUT_NOM']],'Monte Carlo, mismatch only, 500 points, fixed seed, at the worst PVT corner. VOUT error = Vos × (1 + RFB1/RFB2). Cpk 1.33 is a 4σ requirement, stricter than 3σ.'],
+['Quiescent current',{vin:'m',iload:'s'},'amm','Log sweep ILOAD 1 µA to 300 mA','IQ = IIN − IOUT, η = IOUT/IIN',()=>({ch:[{id:114,ti:'Quiescent current vs load, adaptive bias',lx:1,ly:1,x:[1e-6,0.3],y:[1e-5,1e-3],xt:dec(-6,-1),yt:[1e-5,1e-4,1e-3],xl:'ILOAD (A)',yl:'IQ (A)',S:fam(k=>LS(1e-6,.3,90).map(I=>[I,iq(k,I)])),sp:[{pts:[[1e-6,50e-6],[1e-3,50e-6]],l:'IQ ≤ 50 µA'}]},{id:115,ti:'Current efficiency vs load',lx:1,x:[1e-6,0.3],y:[0,100],xt:dec(-6,-1),yt:[0,25,50,75,100],yf:v=>v,xl:'ILOAD (A)',yl:'η = IOUT/IIN (%)',S:fam(k=>LS(1e-6,.3,90).map(I=>[I,100*I/(I+iq(k,I))])),sp:[{pts:[[1e-3,90],[0.3,90]],l:'η ≥ 90%'}]}],kp:[{l:'Max IQ at 1 mA',b:'lo',s:50,u:' µA',v:k=>iq(k,1e-3)*1e6},{l:'Min η at 1 mA',b:'hi',s:90,u:'%',v:k=>100*1e-3/(1e-3+iq(k,1e-3))}]}),
+[['IQ','IS("/$DUT/$DUT_POWER") + IS("/$DUT/$DUT_OUTPUT")'],['IQ_1m','value(IS("/$DUT/$DUT_POWER") + IS("/$DUT/$DUT_OUTPUT") 1m)'],['IGND','-IS("/$DUT/$DUT_GND")'],['eta_pct','-IS("/$DUT/$DUT_OUTPUT")/IS("/$DUT/$DUT_POWER")*100']],'dc sweep var iload, log, 1u to 300m. IQ and IGND should agree; if not, current leaks through another pin.'],
+['Reverse current',{vout:'s',vin:'m'},'rev','VIN at 0 V, force VOUT 0 to 1.2 V, EN on and off','IREV into $DUT_OUTPUT',()=>({ch:[{id:116,ti:'Reverse current vs VOUT − VIN, VIN = 0 V, EN low',ly:1,x:[0,1.2],y:[1e-10,1e-4],xt:[0,0.3,0.6,0.9,1.2],yt:[1e-10,1e-8,1e-6,1e-4],xf:v=>v.toFixed(1),xl:'VOUT − VIN (V)',yl:'IREV (A)',S:fam(k=>LN(0,1.2,60).map(v=>[v,irev(k,v)])).concat([{n:'No bulk switch (ref)',c:'#B4B2A9',d:'1 3',pts:LN(0,0.5,40).map(v=>[v,1e-12*Math.exp(v/0.028)])}]),sp:[{pts:[[0,1e-5],[1.2,1e-5]],l:'IREV ≤ 10 µA'}]}],kp:[{l:'Max IREV at 1.2 V',b:'lo',s:10,u:' µA',v:k=>irev(k,1.2)*1e6,dp:2}]}),
+[['IREV','value(IS("/$DUT/$DUT_OUTPUT") 1.2)'],['IREV_max','ymax(IS("/$DUT/$DUT_OUTPUT"))'],['IREV_to_VIN','value(-IS("/$DUT/$DUT_POWER") 1.2)']],'dc sweep var vrev on a vsource at $DUT_OUTPUT, $DUT_POWER source at 0 V (repeat with VIN floating through 1 GΩ). Run EN high and EN low. Watch the pass-device body diode.'],
+['Thermal shutdown',{mp:'s',vout:'m'},'','Temp sweep −40 to 190 °C at max PD','TSD trip, hysteresis, VOUT',()=>({N:PR,ch:[{id:117,ti:'VOUT vs junction temperature, TSD with 15 °C hysteresis',x:[-40,190],y:[0,1.4],xt:[-40,0,50,100,150],yt:[0,0.4,0.8,1.2],xf:v=>v,yf:v=>v.toFixed(1),xl:'Tj (°C)',yl:'VOUT (V)',S:fam(k=>[[-40,1.2],[TR[k],1.2],[TR[k],0],[190,0],[TR[k]-15,0],[TR[k]-15,1.2]],PR),sp:[{x:150,l:'150',left:1,dy:120},{x:170,l:'170',dy:120}]}],kp:[{l:'Min TSD trip',b:'hi',s:150,u:' °C',v:k=>TR[k],dp:0},{l:'Max TSD trip',b:'lo',s:170,u:' °C',v:k=>TR[k],dp:0}]}),
+[['TSD_trip','cross(VS("/$DUT_OUTPUT") 0.5*VOUT_NOM 1 "falling")'],['TSD_release','cross(VS("/$DUT_OUTPUT") 0.5*VOUT_NOM 1 "rising")'],['TSD_hyst','TSD_trip - TSD_release']],'dc sweep var temp up, then a second test sweeping down with nodeset from the tripped state.'],
+['Noise',{vref:'s',vout:'m'},'','Noise analysis, ILOAD typ','Vn µVrms 10 Hz to 100 kHz',()=>({ch:[{id:118,ti:'Output noise spectral density, ILOAD 100 mA',lx:1,ly:1,x:[10,1e6],y:[10,1e4],xt:dec(1,6),yt:[10,100,1e3,1e4],xl:'Frequency (Hz)',yl:'Vn (nV/√Hz)',S:fam(k=>FN.map(f=>[f,Sn(k,f)])),stim:1},{id:119,ti:'Integrated output noise from 10 Hz',lx:1,x:[10,1e6],y:[0,100],xt:dec(1,6),yt:[0,25,50,75,100],yf:v=>v,xl:'Upper frequency (Hz)',yl:'Vn (µVrms)',S:fam(k=>vn(k)),sp:[{y:50,l:'Vn ≤ 50 µVrms',below:1},{x:1e5,l:'100 kHz',left:1}]}],kp:[{l:'Max Vn, 10 Hz to 100 kHz',b:'lo',s:50,u:' µVrms',v:k=>vn(k).filter(p=>p[0]<=1e5).pop()[1]}]}),
+[['Vn_rms','rmsNoise(10 100k)'],['Vn_1k','value(VN("/$DUT_OUTPUT") 1k)'],['Vn_10k','value(VN("/$DUT_OUTPUT") 10k)']],'noise 10 Hz to 1 MHz, output p=/$DUT_OUTPUT n=/$DUT_GND. A noise number without its bandwidth is not a spec.'],
+['EM / IR and aging',{mp:'s',vin:'m',vout:'m'},'','EMIR at IOUT max, 125 °C; aging 5 yr','J/Jmax, IR drop, ΔVOUT, ΔVDO',()=>({N:PR,ch:[{id:120,ti:'Worst-segment current density vs Tj, IOUT 300 mA',x:[-40,125],y:[0,1.2],xt:[-40,0,25,85,125],yt:[0,0.25,0.5,0.75,1],xf:v=>v,yf:v=>v,xl:'Tj (°C)',yl:'J/Jmax',S:fam(k=>LN(-40,125,40).map(T=>[T,R0[k]*Math.exp((T-25)/150)]),PR),sp:[{y:1,l:'J/Jmax ≤ 1'}]},{id:121,ti:'VOUT drift from aging',x:[0,10],y:[0,8],xt:[0,2,4,6,8,10],yt:[0,2,4,6,8],xf:v=>v,yf:v=>v,xl:'Years',yl:'ΔVOUT (mV)',S:fam(k=>LN(0,10,50).map(t=>[t,AG[k]*Math.pow(t,0.3)])),sp:[{y:6,l:'≤ 0.5%'},{x:5,l:'5 yr',left:1,dy:80}]}],kp:[{l:'Max J/Jmax at 125 °C',b:'lo',s:1,u:'',v:k=>R0[k]*Math.exp(100/150),dp:2},{l:'Max ΔVOUT at 5 yr',b:'lo',s:6,u:' mV',v:k=>AG[k]*Math.pow(5,0.3)}]}),
+[['VOUT',`value(${O} 50u)`],['IR_drop',`value(VT("/$DUT_POWER") 50u) - value(${O} 50u)`]],'Run once fresh and once with the Spectre aging block (5 yr); ΔVOUT = aged minus fresh. J/Jmax comes from the EMIR report, not an ADE expression.']];
+function sch(i){const [n,h,x,stm,me]=K[i];const c=k=>h[k]?CS[h[k]]:CS.d;const w=k=>h[k]?2:1;
+const L=(a,b,d,e,k)=>`<line x1="${a}" y1="${b}" x2="${d}" y2="${e}" stroke="${c(k)}" stroke-width="${w(k)}"/>`;
+const T=(a,b,s,k,cl='ts')=>`<text class="${cl}" x="${a}" y="${b}" ${h[k]?`style="fill:${CS[h[k]]}"`:''}>${s}</text>`;
+const G='var(--muted)';
+let s=`<svg viewBox="0 0 380 300" role="img" aria-label="#${i+1} ${n} testbench">`;
+s+=`<rect x="20" y="28" width="40" height="24" rx="4" fill="none" stroke="${c('vin')}" stroke-width="${w('vin')}"/>`+T(27,44,'VIN','vin','th')+L(60,40,340,40,'vin')+L(240,40,240,60,'vin');
+s+=`<rect x="225" y="60" width="30" height="40" rx="4" fill="none" stroke="${c('mp')}" stroke-width="${w('mp')}"/>`+T(229,84,'MP','mp','th');
+s+=L(240,100,240,150,'vout')+L(240,150,370,150,'vout')+T(250,142,'VOUT','vout');
+s+=`<polygon points="115,85 115,135 175,110" fill="none" stroke="${G}"/><text class="ts" x="123" y="114">EA</text><text class="ts" x="102" y="100">−</text><text class="ts" x="102" y="128">+</text>`;
+s+=`<path d="M175 110 L205 110 L205 80 L225 80" fill="none" stroke="${G}"/><text class="ts" x="150" y="74">VGATE</text>`+L(20,97,115,97,'vref')+T(20,90,'VREF','vref');
+s+=`<path d="M240 210 L80 210 L80 123 L115 123" fill="none" stroke="${c('vfb')}" stroke-width="${w('vfb')}"/>`+T(150,204,'VFB','vfb');
+s+=L(240,150,240,160,'vout')+`<rect x="232" y="160" width="16" height="36" rx="2" fill="none" stroke="${G}"/>`+L(240,196,240,222,'vfb')+`<rect x="232" y="222" width="16" height="36" rx="2" fill="none" stroke="${G}"/><line x1="240" y1="258" x2="240" y2="280" stroke="${G}"/><text class="ts" x="252" y="182">RFB1</text><text class="ts" x="252" y="244">RFB2</text>`;
+s+=`<line x1="300" y1="150" x2="300" y2="168" stroke="${G}"/><line x1="289" y1="168" x2="311" y2="168" stroke="${G}" stroke-width="2"/><line x1="289" y1="175" x2="311" y2="175" stroke="${G}" stroke-width="2"/><line x1="300" y1="175" x2="300" y2="190" stroke="${G}"/><rect x="294" y="190" width="12" height="26" rx="2" fill="none" stroke="${x=='stb'?CS.s:G}" stroke-width="${x=='stb'?2:1}"/><line x1="300" y1="216" x2="300" y2="280" stroke="${G}"/><text class="ts" x="258" y="130">COUT</text><text class="ts" x="309" y="208" ${x=='stb'?`style="fill:${CS.s}"`:''}>RESR</text>`;
+s+=L(352,150,352,186,'iload')+`<circle cx="352" cy="200" r="14" fill="none" stroke="${x=='stb'?CS.s:c('iload')}" stroke-width="${x=='stb'?2:w('iload')}"/>`+L(352,192,352,208,'iload')+L(352,214,352,280,'iload')+T(318,240,'ILOAD','iload');
+s+=`<line x1="230" y1="280" x2="362" y2="280" stroke="${G}"/><text class="ts" x="190" y="284">GND</text>`;
+const tx=(a,b,t,cc)=>`<text class="ts" x="${a}" y="${b}" style="fill:${cc}">${t}</text>`;
+if(x=='stb')s+=`<rect x="72" y="156" width="16" height="26" rx="3" fill="none" stroke="${CS.m}" stroke-width="2"/>`+tx(94,174,'IPRB',CS.m)+tx(318,262,'min/max',CS.s);
+if(x=='en')s+=`<rect x="118" y="150" width="36" height="22" rx="4" fill="none" stroke="${CS.s}" stroke-width="2"/>`+tx(126,165,'EN',CS.s)+`<line x1="136" y1="150" x2="136" y2="127" stroke="${CS.s}" stroke-width="2"/>`;
+if(x=='trim')s+=`<rect x="20" y="112" width="44" height="22" rx="4" fill="none" stroke="${CS.s}" stroke-width="2"/>`+tx(26,127,'TRIM',CS.s)+`<line x1="42" y1="112" x2="42" y2="98" stroke="${CS.s}" stroke-width="2"/>`;
+if(x=='mc')s+=tx(96,160,'MC mismatch',CS.s);
+if(x=='en'||x=='amm')s+=`<circle cx="150" cy="40" r="9" fill="var(--bg)" stroke="${CS.m}" stroke-width="2"/>`+tx(146,44,'A',CS.m)+tx(140,24,'IIN',CS.m);
+if(x=='ac')s+=tx(64,64,'+AC 1 V',CS.s);
+if(x=='vstep')s+=tx(64,64,'step 1 V/µs',CS.s);
+if(x=='step')s+=tx(318,262,'step',CS.s);
+if(x=='short')s+=tx(318,262,'vforce',CS.s);
+if(x=='rev')s+=tx(64,64,'0 V',CS.m)+tx(318,262,'vrev',CS.s)+tx(262,118,'← IREV',CS.m);
+return s+'</svg>'}
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const TIER=[1,1,1,2,2,2,2,3,3,3,3,1,1,3,4];
+let out='';
+K.forEach((k,i)=>{const d=k[5](),N=d.N||PV;
+let h=`<section class="ck" id="c${i+1}"><div class="ckh"><h3>#${i+1} ${k[0]}</h3><span class="chip ${T[TIER[i]][0]}">${T[TIER[i]][1]}</span><span class="sm">${C[i][2]} · ${C[i][3]}</span></div><div class="ckb">`;
+h+=`<div class="grid2"><div class="card"><div class="cap">Testbench</div>${sch(i)}<div class="leg"><span><b style="color:${CS.s}">Stimulus</b>&nbsp;${k[3]}</span></div><div class="leg"><span><b style="color:${CS.m}">Measure</b>&nbsp;${k[4]}</span></div></div>`;
+d.ch.forEach(o=>{h+=`<div class="card"><div class="cap">${o.ti}</div>${plot(o)}${d.cleg?'':leg(o)}</div>`});
+h+='</div>';
+if(d.cleg)h+=leg({cleg:d.cleg,S:[]});
+h+='<div class="tw"><table><thead><tr><th>Metric</th><th>Worst value</th><th>Worst corner</th><th>Spec</th><th>Margin</th><th>Result</th></tr></thead><tbody>';
+d.kp.forEach(q=>{const NN=q.one?[['MC 500 pts']]:N;const vs=NN.map((p,j)=>q.v(j));const wv=q.b=='lo'?Math.max(...vs):Math.min(...vs);const wk=vs.indexOf(wv);const dp=q.dp??1;const mg=q.b=='lo'?q.s-wv:wv-q.s;const fr=mg/Math.abs(q.s);
+const cl=mg<0?'hot':fr<0.2?'mid':'cool';
+h+=`<tr><td>${q.l}</td><td class="n ${cl}">${wv.toFixed(dp)}${q.u}</td><td>${NN[wk][0]}</td><td class="n">${q.b=='lo'?'≤':'≥'} ${q.s}${q.u}</td><td class="n ${cl}">${mg.toFixed(dp)}${q.u} (${(fr*100).toFixed(0)}%)</td><td><span class="chip ${mg<0?'fail':fr<0.2?'warn':'pass'}">${mg<0?'Fail':fr<0.2?'Marginal':'Pass'}</span></td></tr>`});
+h+='</tbody></table></div>';
+h+=`<div class="ade"><div class="hd"><span>ADE XL outputs</span><button type="button" data-i="${i}">Copy</button></div><div class="ex" id="ex${i}">${k[6].map(e=>`<b>${e[0]}</b><br>${esc(e[1])}`).join('<br>')}</div><div class="su">Setup: ${esc(k[7])}</div></div>`;
+h+='</div></section>';out+=h});
+document.getElementById('checksDetail').innerHTML=out;
+document.getElementById('checksDetail').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;const i=+b.dataset.i;const t=K[i][6].map(x=>x[0]+'\t'+x[1]).join('\n');
+const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('ex'+i));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected'};
+try{navigator.clipboard.writeText(t).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1600)},sel)}catch(_){sel()}});
+})();
+
+</script>

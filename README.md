@@ -32,6 +32,15 @@ With `RUN t` (the default) it sets up the test, saves, simulates, waits, and dro
 `./LDO_LoadReg_results.csv` beside your working directory. Set `RUN nil` to only build the test
 and leave the running to you.
 
+## LDO LDR checklist page
+
+`index.html` is the full low-level design review page this script comes from. It holds all 15 simulation checks (#1 Stability to #15 EM / IR and aging), and for each one it shows the testbench with the stimulus and measured nets, PVT or Monte Carlo charts with the spec lines, a worst-case table, and the ADE XL output expressions. The page also carries the load regulation worked example, a copy of this script, and a reference list of public app notes and papers.
+
+Open it straight in a browser, or turn on GitHub Pages for `main` (root) to host it at
+`https://borenw.github.io/ldo-loadreg-setup/`.
+
+The chart data in the page is illustrative, shaped like a 1.2 V, 300 mA LDO. Replace it with your own simulation CSV.
+
 ## What your testbench must already have
 
 The script edits the **setup**, not the schematic. Before running it, `tb_ldo/schematic` needs:
