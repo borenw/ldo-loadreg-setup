@@ -15,8 +15,12 @@
 ;;   - Output cap and ESR already on the schematic
 ;;
 ;; Needs the mae* SKILL API: IC6.1.8 with ADE Assembler, or IC23 / IC25.
+;; mae* cannot open a legacy ADE XL (data.sdb) view; build the test in an
+;; Assembler (maestro) view. ldo_pvt_corners.il works on both.
 ;; Not tested on your install; check the printed DC analysis settings.
 ;; ====================================================================
+ldoLoadregDir = let((f) f = get_filename(piport)
+                  if(f && rindex(f "/") substring(f 1 strlen(f) - strlen(rindex(f "/"))) "."))
 let((
     ;; ---------- 1. Where the setup lives ----------
     (LIB        "myLib")        ; library holding the adexl / maestro view
@@ -38,17 +42,19 @@ let((
     (VOUT_NOM     "1.2")
     (ILOAD_MIN    "1m")
     (ILOAD_MAX    "300m")
-    (NPTS         "31")
+    (NPTS         "31")         ; number of steps; the sweep has NPTS+1 points
     (SPEC_LOADREG "20")         ; load regulation, mV/A, max
     (SPEC_ERR     "1.5")        ; VOUT error over load, %, max
+    (PVT          t)            ; t = add the shared PVT corners (ldo_pvt_corners.il)
+    (TEMPS        "-40 25 125") ; corner temperatures; VIN corners are VIN_VAL -10% / +10%
     (RUN          t)            ; t = set up and run, nil = set up only
 
-    sess vs vp dcOpts outs hist ok)
+    sess vs vp dcOpts outs hist ok pvtFile)
 
   ;; ---------- open the setup ----------
   sess = maeOpenSetup(LIB CELL VIEW ?mode "a")
   unless(sess
-    error("ldo_loadreg: cannot open %s/%s/%s for editing. Close it in the GUI and retry.\n"
+    error("ldo_loadreg: cannot open %s/%s/%s for editing. Close it in the GUI and retry. A legacy ADE XL view (data.sdb) cannot be opened by mae* (ASSEMBLER-8036); use an ADE Assembler (maestro) view.\n"
           LIB CELL VIEW))
   when(member(TEST maeGetSetup(?session sess))
     error("ldo_loadreg: test %s already exists. Change TEST or delete that test first.\n" TEST))
@@ -60,8 +66,13 @@ let((
   maeSetVar(ILOAD_VAR  ILOAD_MIN ?session sess)
 
   ;; ---------- DC sweep of the load current ----------
-  dcOpts = `(("saveOppoint" t) ("param" ,ILOAD_VAR)
-             ("start" ,ILOAD_MIN) ("stop" ,ILOAD_MAX) ("lin" ,NPTS))
+  ;; "sweep"/"designVar" make it a design-variable sweep, and "incrType" plus
+  ;; "stepTypeLin" make "lin" a step count. Without them ADE stores the keys but
+  ;; netlists a bare op point (no param=/start=/stop= on the dc line).
+  dcOpts = `(("saveOppoint" t) ("sweep" "Design Variable")
+             ("designVar" ,ILOAD_VAR) ("param" ,ILOAD_VAR)
+             ("rangeType" "Start-Stop") ("start" ,ILOAD_MIN) ("stop" ,ILOAD_MAX)
+             ("incrType" "Linear") ("stepTypeLin" "Number of Steps") ("lin" ,NPTS))
   ;; argument order changed between releases, so try both forms
   ok = errset(maeSetAnalysis(TEST "dc" ?enable t ?options dcOpts ?session sess))
   unless(ok && car(ok)
@@ -82,13 +93,25 @@ let((
     list("load_reg_mV_per_A" sprintf(nil "1000*(value(%s %s) - value(%s %s))/(%s - %s)"
                                      vs ILOAD_MIN vs ILOAD_MAX ILOAD_MAX ILOAD_MIN)
                              "lt" SPEC_LOADREG)
-    list("VOUT_err_pct"      sprintf(nil "100*ymax(abs(%s - VOUT_NOM))/VOUT_NOM" vs)
+    list("VOUT_err_pct"      sprintf(nil "100*ymax(abs(%s - VAR(\"VOUT_NOM\")))/VAR(\"VOUT_NOM\")" vs)
                              "lt" SPEC_ERR)
     list("headroom_V"        sprintf(nil "value(%s - %s %s)" vp vs ILOAD_MAX) nil nil))
   foreach(o outs
     maeAddOutput(nth(0 o) TEST ?expr nth(1 o) ?session sess)
     when(nth(2 o)
       maeSetSpec(nth(0 o) TEST ?lt nth(3 o) ?session sess)))
+
+  ;; ---------- shared PVT corners, enabled for every test ----------
+  when(PVT
+    pvtFile = strcat(ldoLoadregDir "/ldo_pvt_corners.il")
+    unless(isFile(pvtFile)
+      error("ldo_loadreg: PVT is t but %s is missing. Put ldo_pvt_corners.il beside this file.\n" pvtFile))
+    ldoPvtLibOnly = t
+    load(pvtFile)
+    ldoPvtLibOnly = nil
+    ldoPvtCorners(axlGetMainSetupDB(sess)
+                  maeGetEnvOption(TEST ?option "modelFiles" ?session sess)
+                  ?vinVar VIN_VAR ?vinTyp evalstring(VIN_VAL) ?temps TEMPS))
 
   ;; ---------- save, then optionally run ----------
   maeSaveSetup(?lib LIB ?cell CELL ?view VIEW ?session sess)

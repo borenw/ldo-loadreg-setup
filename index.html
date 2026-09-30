@@ -103,14 +103,14 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 <b>Contents</b>
 <ol>
 <li><a href="#scope">Scope and conventions</a>
-  <ul><li><a href="#given">Given specs vs design outcomes</a></li><li><a href="#nets">Net and variable names</a></li></ul></li>
+  <ul><li><a href="#given">Given specs vs design outcomes</a></li><li><a href="#nets">Net and variable names</a></li><li><a href="#pvt">PVT corners, shared by all 15 checks</a></li></ul></li>
 <li><a href="#checks">Review checklist, 15 checks</a>
   <ul><li><a href="#tiers">Checks by tier</a></li><li><a href="#table">Full table</a></li></ul></li>
 <li><a href="#detail">Checks in detail, #1 to #15</a>
   <ul class="cols"><li><a href="#c1">#1 Stability</a></li><li><a href="#c2">#2 Dropout</a></li><li><a href="#c3">#3 Current limit</a></li><li><a href="#c4">#4 Load transient</a></li><li><a href="#c5">#5 PSRR</a></li><li><a href="#c6">#6 Line transient</a></li><li><a href="#c7">#7 Startup</a></li><li><a href="#c8">#8 Accuracy and regulation</a></li><li><a href="#c9">#9 VREF trim</a></li><li><a href="#c10">#10 Offset Monte Carlo</a></li><li><a href="#c11">#11 Quiescent current</a></li><li><a href="#c12">#12 Reverse current</a></li><li><a href="#c13">#13 Thermal shutdown</a></li><li><a href="#c14">#14 Noise</a></li><li><a href="#c15">#15 EM / IR and aging</a></li></ul></li>
 <li><a href="#lr">Load regulation, worked example</a>
   <ul><li><a href="#lrchart">VOUT vs ILOAD across PVT</a></li><li><a href="#lrtable">Worst-case summary</a></li><li><a href="#lrade">ADE XL outputs</a></li></ul></li>
-<li><a href="#script">SKILL script: add the load regulation test</a></li>
+<li><a href="#script">SKILL scripts: load regulation test and shared PVT corners</a></li>
 <li><a href="#refs">Reference, public online data</a></li>
 </ol>
 </nav>
@@ -129,6 +129,18 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 <tr><td><code>VOUT_NOM</code>, <code>iload</code>, <code>vin</code></td><td>Design variables</td><td>Sweep variables and spec normalization</td></tr>
 </tbody></table></div>
 
+<h3 id="pvt">PVT corners, shared by all 15 checks</h3>
+<p>One corner set is defined once per setup and enabled for every test, so a failure in one check can be traced to the same corner in the others. It has five corners, one per process, and each corner carries three supply and three temperature values, so a full run is 5 × 3 × 3 = 45 points plus nominal.</p>
+<div class="tw"><table>
+<thead><tr><th>Dimension</th><th>Values</th><th>How it is set</th></tr></thead>
+<tbody>
+<tr><td>Process (P)</td><td>TT, SS, FF, SF, FS</td><td>Model sections swapped per corner. Core and 3.3 V MOSFETs take <code>tt</code>/<code>ss</code>/<code>ff</code>/<code>sf</code>/<code>fs</code>. Resistors and MIM caps follow SS and FF, and stay typical at SF and FS. Every other section stays nominal.</td></tr>
+<tr><td>Voltage (V)</td><td>VIN typ −10%, typ, +10%</td><td>Corner variable <code>vin</code> on the <code>$DUT_POWER</code> source</td></tr>
+<tr><td>Temperature (T)</td><td>−40, 25, 125 °C</td><td>Corner variable <code>temperature</code></td></tr>
+</tbody></table></div>
+<p style="margin-top:14px">A corner cannot usefully set a variable that the test sweeps: the sweep overrides it, and the three values become identical runs. Dropout and line regulation sweep VIN, and line transient drives VIN with its own stimulus, so they take a P T set. Thermal shutdown sweeps temperature, so it takes a P V set. Offset Monte Carlo runs at the worst PVT point found by the other checks. The PVT corners column in the <a href="#table">full table</a> lists the set for each check.</p>
+<p><code>ldo_pvt_corners.il</code> (<a href="#script">section 5</a>) adds the set to an ADE XL or ADE Assembler setup and enables it for every test. For the P T or P V checks, call <code>ldoPvtCorners(sdb models ?vary '(P T) ?tests '("LDO_Dropout") ?suffix "_PT")</code> and leave those tests out of the P V T set.</p>
+
 <div class="banner" id="checks">2 · Review checklist, 15 checks</div>
 <h3 id="tiers">Checks by tier</h3>
 <div class="pie">
@@ -142,21 +154,21 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 </div>
 
 <h3 id="table">Full table</h3>
-<p>Sim runs is the rough count for one pass (PVT 5 × 3 × 3 = 45 where supply and temperature both matter). The bar is on a log scale so the Monte Carlo row does not flatten the rest. Click a check to jump to its detail.</p>
+<p>Every check runs against the <a href="#pvt">shared PVT corner set</a>. The PVT corners column says which of process (P), voltage (V) and temperature (T) apply; a check that sweeps VIN or temperature itself drops that dimension. Sim runs is the rough count for one pass, 45 for the full P V T set. The bar is on a log scale so the Monte Carlo row does not flatten the rest. Click a check to jump to its detail.</p>
 <div class="tw"><table>
-<thead><tr><th>#</th><th>Check</th><th>Tier</th><th>Analysis</th><th>Example spec</th><th>Sim runs</th></tr></thead>
+<thead><tr><th>#</th><th>Check</th><th>Tier</th><th>Analysis</th><th>Example spec</th><th>PVT corners</th><th>Sim runs</th></tr></thead>
 <tbody id="ck"></tbody></table></div>
 
 
 <div class="banner" id="detail">3 · Checks in detail, #1 to #15</div>
-<p>Each check shows the testbench with the driven nets in orange and the measured nets in blue, the characterization charts with the red spec limit, a worst-case table across corners, and the ADE XL output expressions. Curves are illustrative models shaped like a 1.2 V, 300 mA LDO; replace them with your CSV data.</p>
+<p>Each check shows the testbench with the driven nets in orange and the measured nets in blue, the characterization charts with the red spec limit, a worst-case table across corners, and the ADE XL output expressions. Curves are illustrative models shaped like a 1.2 V, 300 mA LDO; replace them with your CSV data. For readability the charts show five representative points of the <a href="#pvt">shared PVT set</a>: TT 25 °C, SS and FF at −40 and 125 °C.</p>
 <div class="lg" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:8px">
 <div><i style="background:#D85A30"></i>Stimulus net</div><div><i style="background:#378ADD"></i>Measured net</div><div><i style="background:var(--spec)"></i>Spec limit</div><div><i style="background:#378ADD;opacity:.6"></i>μ ± 3σ (Monte Carlo)</div>
 </div>
 <div id="checksDetail"></div>
 
 <div class="banner" id="lr">4 · Load regulation, worked example</div>
-<p>DC sweep of the load current from 1 mA to 300 mA at VIN = 1.8 V, across five PVT corners. Two limits apply: the static slope (load regulation, mV/A) and the total VOUT error over the whole load range. The numbers below are illustrative, shaped like a real 1.2 V, 300 mA LDO, so the page is ready to take your CSV.</p>
+<p>DC sweep of the load current from 1 mA to 300 mA at VIN = 1.8 V, across the <a href="#pvt">shared PVT set</a> (5 processes × VIN 1.62, 1.8, 1.98 V × −40, 25, 125 °C = 45 points). The chart and tables show five representative corners. Two limits apply: the static slope (load regulation, mV/A) and the total VOUT error over the whole load range. The numbers below are illustrative, shaped like a real 1.2 V, 300 mA LDO, so the page is ready to take your CSV.</p>
 <h3 id="lrchart"><span id="lrfig">Figure</span> · VOUT vs ILOAD across PVT</h3>
 <div class="fig">
 <svg viewBox="0 0 600 330" role="img" aria-label="VOUT versus ILOAD for five corners with plus and minus 1.5 percent spec lines">
@@ -213,19 +225,21 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 <tbody>
 <tr><td><code>VOUT</code></td><td><code>VS("/$DUT_OUTPUT")</code></td><td>plot only</td></tr>
 <tr><td><code>load_reg_mV_per_A</code></td><td><code>1000*(value(VS("/$DUT_OUTPUT") 1m) - value(VS("/$DUT_OUTPUT") 300m))/(300m - 1m)</code></td><td>&lt; 20</td></tr>
-<tr><td><code>VOUT_err_pct</code></td><td><code>100*ymax(abs(VS("/$DUT_OUTPUT") - VOUT_NOM))/VOUT_NOM</code></td><td>&lt; 1.5</td></tr>
+<tr><td><code>VOUT_err_pct</code></td><td><code>100*ymax(abs(VS("/$DUT_OUTPUT") - VAR("VOUT_NOM")))/VAR("VOUT_NOM")</code></td><td>&lt; 1.5</td></tr>
 <tr><td><code>headroom_V</code></td><td><code>value(VS("/$DUT_POWER") - VS("/$DUT_OUTPUT") 300m)</code></td><td>info</td></tr>
 </tbody></table></div>
 
-<div class="banner" id="script">5 · SKILL script: add the load regulation test</div>
+<div class="banner" id="script">5 · SKILL scripts: load regulation test and shared PVT corners</div>
 <ol class="steps">
-<li>Edit sections 1 to 3 of the script: library, testbench cell, setup view, and the four net names.</li>
+<li>Save <code>ldo_loadreg_setup.il</code> and <code>ldo_pvt_corners.il</code> in the same directory.</li>
+<li>Edit sections 1 to 3 of <code>ldo_loadreg_setup.il</code>: library, testbench cell, setup view, the four net names, and the operating point. <code>VIN_VAL</code> is also the typical VIN for the ±10% corners.</li>
 <li>Close the setup in the GUI, or open it read-only, so the script can open it for editing.</li>
-<li>Paste into the CIW, or save as <code>ldo_loadreg_setup.il</code> and run <code>load("ldo_loadreg_setup.il")</code>.</li>
-<li>Reopen the setup. The new test <code>LDO_LoadReg</code> runs against your existing corners, with pass/fail against the two specs.</li>
+<li>In the CIW, run <code>load("ldo_loadreg_setup.il")</code>. With <code>PVT t</code> it also adds the shared corner set.</li>
+<li>Reopen the setup. The new test <code>LDO_LoadReg</code> runs nominal plus the 45 PVT points, with pass/fail against the two specs.</li>
+<li>For a setup that already has its tests, such as the other 14 checks, edit section 1 of <code>ldo_pvt_corners.il</code> and <code>load()</code> it on its own. It enables the corners for every test in the setup.</li>
 </ol>
-<div class="note">Built on the ADE Assembler <code>mae*</code> SKILL API (IC6.1.8 and newer). It has not been run on your install. The script prints the DC analysis settings after it sets them; if the sweep is empty, set the <code>iload</code> sweep once by hand and the outputs and specs still apply. Classic ADE XL on IC6.1.7 uses the older <code>axl*</code> API instead.</div>
-<div class="codehd"><b>ldo_loadreg_setup.il</b><button id="copyBtn" type="button">Copy script</button></div>
+<div class="note">Checked on IC6.1.8 against a 1.8 V capless LDO testbench: both scripts built the setups in batch mode, the nominal test ran in the ADE XL GUI, and all 45 corner points were checked by running Spectre on the netlist ADE generated. <code>ldo_loadreg_setup.il</code> uses the ADE Assembler <code>mae*</code> API, which cannot open a classic ADE XL view (<code>data.sdb</code>, <code>ASSEMBLER-8036</code>). Build the test in an Assembler (maestro) view, or convert it with maestro-to-adexl. <code>ldo_pvt_corners.il</code> uses the <code>axl*</code> corner API and works on both view types. The script prints the DC analysis it ended up with. Check that it shows <code>sweep "Design Variable"</code> and <code>incrType "Linear"</code>, because without them ADE netlists a single operating point.</div>
+<div class="codehd"><b>ldo_loadreg_setup.il</b><button class="copyBtn" data-pre="skill" type="button">Copy script</button></div>
 <pre id="skill">;; ====================================================================
 ;; ldo_loadreg_setup.il
 ;; Adds an LDO load-regulation test to an existing ADE XL / ADE Assembler
@@ -243,8 +257,12 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 ;;   - Output cap and ESR already on the schematic
 ;;
 ;; Needs the mae* SKILL API: IC6.1.8 with ADE Assembler, or IC23 / IC25.
+;; mae* cannot open a legacy ADE XL (data.sdb) view; build the test in an
+;; Assembler (maestro) view. ldo_pvt_corners.il works on both.
 ;; Not tested on your install; check the printed DC analysis settings.
 ;; ====================================================================
+ldoLoadregDir = let((f) f = get_filename(piport)
+                  if(f &amp;&amp; rindex(f "/") substring(f 1 strlen(f) - strlen(rindex(f "/"))) "."))
 let((
     ;; ---------- 1. Where the setup lives ----------
     (LIB        "myLib")        ; library holding the adexl / maestro view
@@ -266,17 +284,19 @@ let((
     (VOUT_NOM     "1.2")
     (ILOAD_MIN    "1m")
     (ILOAD_MAX    "300m")
-    (NPTS         "31")
+    (NPTS         "31")         ; number of steps; the sweep has NPTS+1 points
     (SPEC_LOADREG "20")         ; load regulation, mV/A, max
     (SPEC_ERR     "1.5")        ; VOUT error over load, %, max
+    (PVT          t)            ; t = add the shared PVT corners (ldo_pvt_corners.il)
+    (TEMPS        "-40 25 125") ; corner temperatures; VIN corners are VIN_VAL -10% / +10%
     (RUN          t)            ; t = set up and run, nil = set up only
 
-    sess vs vp dcOpts outs hist ok)
+    sess vs vp dcOpts outs hist ok pvtFile)
 
   ;; ---------- open the setup ----------
   sess = maeOpenSetup(LIB CELL VIEW ?mode "a")
   unless(sess
-    error("ldo_loadreg: cannot open %s/%s/%s for editing. Close it in the GUI and retry.\n"
+    error("ldo_loadreg: cannot open %s/%s/%s for editing. Close it in the GUI and retry. A legacy ADE XL view (data.sdb) cannot be opened by mae* (ASSEMBLER-8036); use an ADE Assembler (maestro) view.\n"
           LIB CELL VIEW))
   when(member(TEST maeGetSetup(?session sess))
     error("ldo_loadreg: test %s already exists. Change TEST or delete that test first.\n" TEST))
@@ -288,8 +308,13 @@ let((
   maeSetVar(ILOAD_VAR  ILOAD_MIN ?session sess)
 
   ;; ---------- DC sweep of the load current ----------
-  dcOpts = `(("saveOppoint" t) ("param" ,ILOAD_VAR)
-             ("start" ,ILOAD_MIN) ("stop" ,ILOAD_MAX) ("lin" ,NPTS))
+  ;; "sweep"/"designVar" make it a design-variable sweep, and "incrType" plus
+  ;; "stepTypeLin" make "lin" a step count. Without them ADE stores the keys but
+  ;; netlists a bare op point (no param=/start=/stop= on the dc line).
+  dcOpts = `(("saveOppoint" t) ("sweep" "Design Variable")
+             ("designVar" ,ILOAD_VAR) ("param" ,ILOAD_VAR)
+             ("rangeType" "Start-Stop") ("start" ,ILOAD_MIN) ("stop" ,ILOAD_MAX)
+             ("incrType" "Linear") ("stepTypeLin" "Number of Steps") ("lin" ,NPTS))
   ;; argument order changed between releases, so try both forms
   ok = errset(maeSetAnalysis(TEST "dc" ?enable t ?options dcOpts ?session sess))
   unless(ok &amp;&amp; car(ok)
@@ -310,13 +335,25 @@ let((
     list("load_reg_mV_per_A" sprintf(nil "1000*(value(%s %s) - value(%s %s))/(%s - %s)"
                                      vs ILOAD_MIN vs ILOAD_MAX ILOAD_MAX ILOAD_MIN)
                              "lt" SPEC_LOADREG)
-    list("VOUT_err_pct"      sprintf(nil "100*ymax(abs(%s - VOUT_NOM))/VOUT_NOM" vs)
+    list("VOUT_err_pct"      sprintf(nil "100*ymax(abs(%s - VAR(\"VOUT_NOM\")))/VAR(\"VOUT_NOM\")" vs)
                              "lt" SPEC_ERR)
     list("headroom_V"        sprintf(nil "value(%s - %s %s)" vp vs ILOAD_MAX) nil nil))
   foreach(o outs
     maeAddOutput(nth(0 o) TEST ?expr nth(1 o) ?session sess)
     when(nth(2 o)
       maeSetSpec(nth(0 o) TEST ?lt nth(3 o) ?session sess)))
+
+  ;; ---------- shared PVT corners, enabled for every test ----------
+  when(PVT
+    pvtFile = strcat(ldoLoadregDir "/ldo_pvt_corners.il")
+    unless(isFile(pvtFile)
+      error("ldo_loadreg: PVT is t but %s is missing. Put ldo_pvt_corners.il beside this file.\n" pvtFile))
+    ldoPvtLibOnly = t
+    load(pvtFile)
+    ldoPvtLibOnly = nil
+    ldoPvtCorners(axlGetMainSetupDB(sess)
+                  maeGetEnvOption(TEST ?option "modelFiles" ?session sess)
+                  ?vinVar VIN_VAR ?vinTyp evalstring(VIN_VAL) ?temps TEMPS))
 
   ;; ---------- save, then optionally run ----------
   maeSaveSetup(?lib LIB ?cell CELL ?view VIEW ?session sess)
@@ -329,8 +366,132 @@ let((
     errset(maeExportOutputView(?session sess
                                ?fileName strcat("./" TEST "_results.csv")
                                ?view "Detail")))
-  sess)
-</pre>
+  sess)</pre>
+<div class="codehd" style="margin-top:14px"><b>ldo_pvt_corners.il</b><button class="copyBtn" data-pre="skillpvt" type="button">Copy script</button></div>
+<pre id="skillpvt">;; ====================================================================
+;; ldo_pvt_corners.il
+;; Adds the LDO LDR PVT corner set to an ADE XL (adexl) or ADE Assembler
+;; (maestro) setup and enables it for every test in that setup, so all
+;; 15 checks run against the same corners.
+;;
+;;   Process  TT SS FF SF FS   (model sections swapped per corner)
+;;   Voltage  VIN_TYP x (0.9 1 1.1)
+;;   Temp     -40 25 125 C
+;;   = 5 corners, 5 x 3 x 3 = 45 points
+;;
+;; How to use
+;;   1. Edit section 1 below.
+;;   2. Close the setup view in the GUI so this script can open it.
+;;   3. In the CIW:   load("ldo_pvt_corners.il")
+;;
+;; ldo_loadreg_setup.il calls ldoPvtCorners() itself when PVT is t.
+;; Checks that sweep VIN (#2 Dropout, line_reg in #8) or temperature
+;; (#13 Thermal shutdown) cannot also take that corner variable: pass
+;; ?vary '(P T) or '(P V) and ?tests for those, with a ?suffix so the
+;; names do not clash. See the table on the LDR page.
+;; ====================================================================
+
+;; ---------- process corners: name, then section swaps ----------
+;; Each swap is (nominal section  corner section). Sections not listed
+;; stay nominal. This model file has no ss/ff-only resistor or MIM split
+;; for SF/FS, so those keep tt_res / tt_mim.
+ldoPvtProcess = '(
+  ("TT" ("tt" "tt") ("tt_3v" "tt_3v"))
+  ("SS" ("tt" "ss") ("tt_3v" "ss_3v") ("tt_res" "ss_res") ("tt_mim" "ss_mim"))
+  ("FF" ("tt" "ff") ("tt_3v" "ff_3v") ("tt_res" "ff_res") ("tt_mim" "ff_mim"))
+  ("SF" ("tt" "sf") ("tt_3v" "sf_3v"))
+  ("FS" ("tt" "fs") ("tt_3v" "fs_3v")))
+
+;; sdb        setup DB handle: axlGetMainSetupDB(session)
+;; models     the test's nominal model list, (("file" "section") ...)
+;; tests      tests to enable the corners for; nil = every test in sdb
+;; vary       which of P V T the corners change
+procedure(ldoPvtCorners(sdb models @key (vinVar "vin") (vinTyp 1.8) (vinTol 0.1)
+                        (temps "-40 25 125") (vary '(P V T)) (tests nil) (suffix ""))
+  let((allTests names c m mf sec swap vinList i)
+    allTests = cadr(axlGetTests(sdb))
+    unless(tests tests = allTests)
+    vinList = sprintf(nil "%g %g %g" vinTyp*(1-vinTol) vinTyp vinTyp*(1+vinTol))
+    foreach(p ldoPvtProcess
+      c = axlPutCorner(sdb strcat(car(p) suffix))
+      axlSetEnabled(c t)
+      names = cons(strcat(car(p) suffix) names)
+      when(memq('T vary) axlPutVar(c "temperature" temps))
+      when(memq('V vary) axlPutVar(c vinVar vinList))
+      i = 0
+      foreach(fs models
+        sec = cadr(fs)
+        when(memq('P vary) &amp;&amp; (swap = assoc(sec cdr(p))) sec = cadr(swap))
+        mf = car(last(parseString(car(fs) "/")))
+        m = axlPutModel(c if(i == 0 mf sprintf(nil "%s:%d" mf i)))
+        axlSetModelFile(m car(fs))
+        axlSetModelSection(m sprintf(nil "\"%s\"" sec))
+        axlSetModelTest(m "All")
+        axlSetModelBlock(m "Global")
+        axlSetEnabled(m t)
+        i++)
+      foreach(tn allTests axlSetCornerTestEnabled(c tn if(member(tn tests) t nil))))
+    printf("ldoPvtCorners: %L, vin %s, temp %s, vary %L, tests %L\n"
+           reverse(names) vinList temps vary tests)
+    reverse(names)))
+
+;; Legacy ADE XL keeps each test's model list in
+;; &lt;view&gt;/test_states/&lt;lib&gt;/&lt;cell&gt;/&lt;sim&gt;/&lt;test&gt;_active/modelSetup
+procedure(ldoPvtSubdirs(d)
+  setof(x getDirFiles(d) !member(x '("." "..")) &amp;&amp; isDir(strcat(d "/" x))))
+procedure(ldoPvtStateModels(viewDir test)
+  let((root f p models)
+    root = strcat(viewDir "/test_states")
+    foreach(l ldoPvtSubdirs(root)
+      foreach(c ldoPvtSubdirs(strcat(root "/" l))
+        foreach(sim ldoPvtSubdirs(strcat(root "/" l "/" c))
+          f = strcat(root "/" l "/" c "/" sim "/" test "_active/modelSetup")
+          when(!models &amp;&amp; isFile(f)
+            p = infile(f)  models = car(lineread(p))  close(p)))))
+    models))
+
+;; ---------- standalone run ----------
+;; Skipped when ldo_loadreg_setup.il loads this file for the procedure.
+unless(boundp('ldoPvtLibOnly) &amp;&amp; ldoPvtLibOnly
+let((
+    ;; ---------- 1. Where the setup lives and the operating point ----------
+    (LIB      "myLib")
+    (CELL     "tb_ldo")
+    (VIEW     "adexl")     ; "adexl" or "maestro"
+    (VIN_VAR  "vin")       ; design variable on the VIN source
+    (VIN_TYP  1.8)         ; typical VIN; corners use -10% / typ / +10%
+    (TEMPS    "-40 25 125")
+    sess sdb tests models axl)
+
+  axl = (VIEW == "adexl")
+  if(axl then
+    ;; legacy ADE XL: maeOpenSetup refuses data.sdb (ASSEMBLER-8036)
+    sess = axlCreateSession(sprintf(nil "ldoPvt%d" random(100000)))
+    sdb = car(errset(axlSetMainSetupDBLCV(sess LIB CELL VIEW)))
+  else
+    sess = maeOpenSetup(LIB CELL VIEW ?mode "a")
+    sdb = sess &amp;&amp; axlGetMainSetupDB(sess))
+  unless(sdb
+    error("ldoPvtCorners: cannot open %s/%s/%s for editing. Close it in the GUI and retry.\n"
+          LIB CELL VIEW))
+  tests = cadr(axlGetTests(sdb))
+  unless(tests error("ldoPvtCorners: %s/%s/%s has no tests.\n" LIB CELL VIEW))
+  ;; nominal models come from the first test; every test in one setup
+  ;; normally shares the PDK model list
+  models = if(axl
+    ldoPvtStateModels(ddGetObj(LIB CELL VIEW)~&gt;readPath car(tests))
+    maeGetEnvOption(car(tests) ?option "modelFiles" ?session sess))
+  unless(models error("ldoPvtCorners: test %s has no model files.\n" car(tests)))
+  ldoPvtCorners(sdb models ?vinVar VIN_VAR ?vinTyp VIN_TYP ?temps TEMPS)
+  if(axl then
+    axlCommitSetupDB(sdb)
+    axlCloseSetupDB(sdb)
+    axlCloseSession(sess)
+  else
+    maeSaveSetup(?session sess)
+    maeCloseSession(?session sess))
+  printf("ldoPvtCorners: saved %s/%s/%s. Reopen it and check the Corners setup.\n" LIB CELL VIEW)
+  t))</pre>
 
 <div class="banner" id="refs">6 · Reference, public online data</div>
 <ol class="refs">
@@ -360,17 +521,17 @@ let((
 
 <script>
 const T={1:['k1','Tier 1'],2:['k2','Tier 2'],3:['k3','Tier 3'],4:['k4','Tier 4']};
-const C=[["Stability", 1, "STB", "DC gain ≥ 60 dB, PM ≥ 45°, GM ≥ 10 dB", 60], ["Dropout", 1, "DC sweep VIN", "VDO ≤ 200 mV at 300 mA", 45], ["Current limit", 1, "DC, forced VOUT", "400 ≤ ILIM ≤ 700 mA", 15], ["Load transient", 2, "Tran", "ΔVOUT ≤ 3% for 0.3 A/µs", 15], ["PSRR", 2, "AC", "≥ 60 dB at 1 kHz, ≥ 20 dB at 1 MHz", 45], ["Line transient", 2, "Tran", "ΔVOUT ≤ 1% for 1 V/µs", 15], ["Startup", 2, "Tran from EN", "tSS 0.2 to 1 ms, OS ≤ 2%, IIN ≤ 400 mA", 30], ["Accuracy and regulation", 3, "DC sweep", "≤ 20 mV/A, error ≤ 1.5%", 45], ["VREF trim", 3, "DC trim sweep + MC", "range ≥ ±30 mV, post-trim ±0.25%", 5], ["Offset Monte Carlo", 3, "Monte Carlo", "|μ|+3σ ≤ 4 mV, Cpk ≥ 1.33", 500], ["Quiescent current", 3, "DC log sweep", "IQ ≤ 50 µA, η ≥ 90% at 1 mA", 15], ["Reverse current", 1, "DC, VOUT > VIN", "IREV ≤ 10 µA", 30], ["Thermal shutdown", 1, "DC temp sweep", "150 ≤ TSD ≤ 170 °C", 5], ["Noise", 3, "Noise", "≤ 50 µVrms, 10 Hz to 100 kHz", 15], ["EM / IR and aging", 4, "EMIR + aging", "J/Jmax ≤ 1, ΔVOUT ≤ 0.5% at 5 yr", 10]];
+const C=[["Stability", 1, "STB", "DC gain ≥ 60 dB, PM ≥ 45°, GM ≥ 10 dB", 180, "P V T × iload {min, max} × ESR {min, max}"], ["Dropout", 1, "DC sweep VIN", "VDO ≤ 200 mV at 300 mA", 15, "P T (VIN is swept)"], ["Current limit", 1, "DC, forced VOUT", "400 ≤ ILIM ≤ 700 mA", 45, "P V T"], ["Load transient", 2, "Tran", "ΔVOUT ≤ 3% for 0.3 A/µs", 45, "P V T"], ["PSRR", 2, "AC", "≥ 60 dB at 1 kHz, ≥ 20 dB at 1 MHz", 45, "P V T"], ["Line transient", 2, "Tran", "ΔVOUT ≤ 1% for 1 V/µs", 15, "P T (VIN is the stimulus)"], ["Startup", 2, "Tran from EN", "tSS 0.2 to 1 ms, OS ≤ 2%, IIN ≤ 400 mA", 90, "P V T × prebias {0, 50%}"], ["Accuracy and regulation", 3, "DC sweep", "≤ 20 mV/A, error ≤ 1.5%", 60, "P V T load_reg, P T line_reg"], ["VREF trim", 3, "DC trim sweep + MC", "range ≥ ±30 mV, post-trim ±0.25%", 45, "P V T"], ["Offset Monte Carlo", 3, "Monte Carlo", "|μ|+3σ ≤ 4 mV, Cpk ≥ 1.33", 500, "Worst PVT point only"], ["Quiescent current", 3, "DC log sweep", "IQ ≤ 50 µA, η ≥ 90% at 1 mA", 45, "P V T"], ["Reverse current", 1, "DC, VOUT > VIN", "IREV ≤ 10 µA", 30, "P T × EN {on, off} (VIN = 0 V)"], ["Thermal shutdown", 1, "DC temp sweep", "150 ≤ TSD ≤ 170 °C", 15, "P V (T is swept)"], ["Noise", 3, "Noise", "≤ 50 µVrms, 10 Hz to 100 kHz", 45, "P V T"], ["EM / IR and aging", 4, "EMIR + aging", "J/Jmax ≤ 1, ΔVOUT ≤ 0.5% at 5 yr", 30, "P V at 125 °C × {fresh, aged}"]];
 const mx=Math.log10(500);
 document.getElementById('ck').innerHTML=C.map((r,i)=>{const w=Math.max(6,Math.log10(r[4])/mx*110);const cls=r[4]>=100?'hot':r[4]>=30?'mid':'cool';
-return `<tr><td class="rank">#${i+1}</td><td><a href="#c${i+1}">${r[0]}</a></td><td><span class="chip ${T[r[1]][0]}">${T[r[1]][1]}</span></td><td>${r[2]}</td><td>${r[3]}</td><td><div class="barc"><div class="bar" style="width:${w}px"></div><span class="${cls}">${r[4]}</span></div></td></tr>`}).join('');
+return `<tr><td class="rank">#${i+1}</td><td><a href="#c${i+1}">${r[0]}</a></td><td><span class="chip ${T[r[1]][0]}">${T[r[1]][1]}</span></td><td>${r[2]}</td><td>${r[3]}</td><td>${r[5]}</td><td><div class="barc"><div class="bar" style="width:${w}px"></div><span class="${cls}">${r[4]}</span></div></td></tr>`}).join('');
 const L=[['SS 125°C','--c3',-6,16],['FF 125°C','--c5',-9,14],['TT 25°C','--c1',0,12],['SS −40°C','--c2',8,10],['FF −40°C','--c4',5,9]];
 const rows=L.map(r=>{const v0=1.2+r[2]/1000,v3=1.2+(r[2]-r[3]*0.3)/1000,err=Math.max(Math.abs(r[2]),Math.abs(r[2]-r[3]*0.3))/12;return{n:r[0],c:r[1],v0,v3,lr:r[3],err}}).sort((a,b)=>b.err-a.err);
 const cl=(v,s)=>v/s>0.7?'mid':'cool';
 document.getElementById('lrt').innerHTML=rows.map((r,i)=>`<tr><td class="rank">#${i+1}</td><td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${r.c});margin-right:6px"></span>${r.n}</td><td class="n">${r.v0.toFixed(4)} V</td><td class="n">${r.v3.toFixed(4)} V</td><td><div class="barc"><div class="bar" style="width:${r.lr/20*110}px"></div><span class="${cl(r.lr,20)}">${r.lr.toFixed(1)}</span></div></td><td><div class="barc"><div class="bar" style="width:${r.err/1.5*110}px"></div><span class="${cl(r.err,1.5)}">${r.err.toFixed(2)}</span></div></td><td><span class="chip pass">Pass</span></td></tr>`).join('');
-const btn=document.getElementById('copyBtn'),pre=document.getElementById('skill');
+document.querySelectorAll('.copyBtn').forEach(btn=>{const pre=document.getElementById(btn.dataset.pre);
 btn.addEventListener('click',()=>{const t=pre.textContent;const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selected, press Ctrl+C'};
-try{navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy script',1800)},sel)}catch(e){sel()}});
+try{navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy script',1800)},sel)}catch(e){sel()}})});
 
 (function(){
 const CS={s:'#D85A30',m:'#378ADD',d:'var(--muted)'},RED='#DE350B',lg=Math.log10;
