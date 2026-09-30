@@ -157,7 +157,7 @@ pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radiu
 
 <div class="banner" id="lr">4 · Load regulation, worked example</div>
 <p>DC sweep of the load current from 1 mA to 300 mA at VIN = 1.8 V, across five PVT corners. Two limits apply: the static slope (load regulation, mV/A) and the total VOUT error over the whole load range. The numbers below are illustrative, shaped like a real 1.2 V, 300 mA LDO, so the page is ready to take your CSV.</p>
-<h3 id="lrchart">VOUT vs ILOAD across PVT</h3>
+<h3 id="lrchart"><span id="lrfig">Figure</span> · VOUT vs ILOAD across PVT</h3>
 <div class="fig">
 <svg viewBox="0 0 600 330" role="img" aria-label="VOUT versus ILOAD for five corners with plus and minus 1.5 percent spec lines">
 <g font-family="IBM Plex Sans,system-ui,sans-serif" font-size="12" fill="var(--muted)">
@@ -352,6 +352,10 @@ let((
 <li><a href="https://community.cadence.com/cadence_technology_forums/f/custom-ic-design/46746/how-to-evaluate-the-variable-in-a-maestro-measurement-expression-and-not-treat-it-as-a-literal-string">Cadence Community, building maeAddOutput expressions from variables</a><br><small>Why the script builds each expression with sprintf.</small></li>
 </ol>
 <p class="cap">Chart data on this page is illustrative. Figures and text from the linked documents remain the property of their owners.</p>
+<footer style="margin-top:36px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between">
+<a href="https://borenw.github.io/">Page 54 · Bo's Engineering Curriculum</a>
+<a href="https://github.com/borenw/ldo-loadreg-setup">github.com/borenw/ldo-loadreg-setup</a>
+</footer>
 </div>
 
 <script>
@@ -498,11 +502,11 @@ if(x=='rev')s+=tx(64,64,'0 V',CS.m)+tx(318,262,'vrev',CS.s)+tx(262,118,'← IREV
 return s+'</svg>'}
 const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const TIER=[1,1,1,2,2,2,2,3,3,3,3,1,1,3,4];
-let out='';
+let out='',FIG=1;
 K.forEach((k,i)=>{const d=k[5](),N=d.N||PV;
 let h=`<section class="ck" id="c${i+1}"><div class="ckh"><h3>#${i+1} ${k[0]}</h3><span class="chip ${T[TIER[i]][0]}">${T[TIER[i]][1]}</span><span class="sm">${C[i][2]} · ${C[i][3]}</span></div><div class="ckb">`;
-h+=`<div class="grid2"><div class="card"><div class="cap">Testbench</div>${sch(i)}<div class="leg"><span><b style="color:${CS.s}">Stimulus</b>&nbsp;${k[3]}</span></div><div class="leg"><span><b style="color:${CS.m}">Measure</b>&nbsp;${k[4]}</span></div></div>`;
-d.ch.forEach(o=>{h+=`<div class="card"><div class="cap">${o.ti}</div>${plot(o)}${d.cleg?'':leg(o)}</div>`});
+h+=`<div class="grid2"><div class="card"><div class="cap">Figure ${FIG++} · #${i+1} testbench</div>${sch(i)}<div class="leg"><span><b style="color:${CS.s}">Stimulus</b>&nbsp;${k[3]}</span></div><div class="leg"><span><b style="color:${CS.m}">Measure</b>&nbsp;${k[4]}</span></div></div>`;
+d.ch.forEach(o=>{h+=`<div class="card"><div class="cap">Figure ${FIG++} · ${o.ti}</div>${plot(o)}${d.cleg?'':leg(o)}</div>`});
 h+='</div>';
 if(d.cleg)h+=leg({cleg:d.cleg,S:[]});
 h+='<div class="tw"><table><thead><tr><th>Metric</th><th>Worst value</th><th>Worst corner</th><th>Spec</th><th>Margin</th><th>Result</th></tr></thead><tbody>';
@@ -513,6 +517,7 @@ h+='</tbody></table></div>';
 h+=`<div class="ade"><div class="hd"><span>ADE XL outputs</span><button type="button" data-i="${i}">Copy</button></div><div class="ex" id="ex${i}">${k[6].map(e=>`<b>${e[0]}</b><br>${esc(e[1])}`).join('<br>')}</div><div class="su">Setup: ${esc(k[7])}</div></div>`;
 h+='</div></section>';out+=h});
 document.getElementById('checksDetail').innerHTML=out;
+document.getElementById('lrfig').textContent='Figure '+FIG;
 document.getElementById('checksDetail').addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(!b)return;const i=+b.dataset.i;const t=K[i][6].map(x=>x[0]+'\t'+x[1]).join('\n');
 const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('ex'+i));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected'};
 try{navigator.clipboard.writeText(t).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1600)},sel)}catch(_){sel()}});
